@@ -1,11 +1,13 @@
 # Макс кол-во подстанций типа Б: 3
 # 15 МВт - Макс выход ЭС
 # 23 МВт - Макс мощность подстанции
-num_of_stationsA = 0
-num_of_stationsB = 1
-topology = [[[], [], []] * num_of_stationsA, [[], []] * num_of_stationsB]
-generators = {"solar": 1, "wind": 0}
-consumers = {"hA": 1, "hB": 0, "hosp": 0, "manuf": 0}
+# 28.7 МВт - Макс выроботка на 1 подстанцию (22.96 МВт с потерями)
+# 19.6 МВт - Макс потребление на 1 подстанцию (22.93 МВт с потерями)
+# num_of_stationsA = 0
+# num_of_stationsB = 1
+# topology = [[[], [], []] * num_of_stationsA, [[], []] * num_of_stationsB]
+
+from obj_types import types
 
 get_percent = lambda value: round(((20 * value) / 23) / 100, 3) if value < 23 else 0.2
 
@@ -31,29 +33,35 @@ def get_max_diesel_power(value: float) -> float:
     return max_value
 
 
-obj_types = {
-    "solar": 15,  # солнечные электростанции
-    "wind": 15,  # ветровые электростанции
-    "houseA": -5,  # дом А
-    "houseB": -5,  # дом Б
-    "factory": -5  # заводы
-    # "hospital" -10  # больницы
-}
-line = ["houseB", "houseB", "houseB"]
-
-
+"""
+# Max consumption of the line
 def get_consumption_of_line(line: list) -> float:
-    sum = 0
+    consumption = 0
     for obj in line:
-        sum += abs(obj_types.get(obj, 0))
-    return get_input_power(sum)
+        consumption += abs(types.get(obj, 0))
+    return get_input_power(consumption)
 
 
+# Max charge of the line
 def get_charge_of_line(line: list) -> float:
-    sum = 0
+    charge = 0
     for obj in line:
-        sum += obj_types.get(obj, 0)
-    return get_out_power(sum)
+        charge += types.get(obj, 0)
+    return get_out_power(charge)
+"""
+
+line1 = ["solar", "factory1", 'factory1', 'factory1', ]
 
 
-print(get_consumption_of_line(line))
+# Max power of line
+def get_mixed_power_of_line(line: list) -> float:
+    power = 0
+    for obj in line:
+        power += types.get(obj, 0)
+    if power > 0:
+        return get_out_power(power)
+    return -get_input_power(-power)
+
+
+max_cons = get_mixed_power_of_line(["houseB", "houseB", "houseB", "factory2", "factory2"])
+print(max_cons)
