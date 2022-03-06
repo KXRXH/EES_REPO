@@ -1,0 +1,1 @@
+{'flag_Sun': True, 'flag_Hospital': False, 'flag_Factory': True, 'flag_HouseA': True, 'flag_HouseB': True, 'waySun': 1, 'wayWind': 0, 'wayHospital': -1, 'wayFactory': 6, 'wayHouseA': 4, 'wayHouseB': 4, 'wind_way': [0], 'wind_k': [], 'sun_k': [0.6220956264274893]}
