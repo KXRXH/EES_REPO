@@ -2,21 +2,9 @@ from engine_const import *
 from engine.engine import Engine
 
 
-def get_objects(eng: Engine):
+def get_objects(eng: Engine, modules: dict):
     score_then_solar = [[] for _ in range(0, eng.count_wind)]
     power_then_solar = [[] for _ in range(0, eng.count_solar)]
-    global score_then_solar
-    global power_then_solar
-    global score_then_wind
-    global power_then_wind
-    global score_then_hospital
-    global power_then_hospital
-    global score_then_factory
-    global power_then_factory
-    global score_then_houseA
-    global power_then_houseA
-    global score_then_houseB
-    global power_then_houseB
 
     data_obj = []
     id_itr = 1
@@ -249,7 +237,7 @@ def get_objects(eng: Engine):
 
         score_now_loss += contract
 
-        power_now_generated += min(value_solar * koaf_solar_gen[itr], max_power_solar)
+        power_now_generated += min(eng.get_by_type('solar') * koaf_solar_gen[itr], max_power_solar)
 
         data_obj.append(
             {
@@ -282,8 +270,8 @@ def get_objects(eng: Engine):
         address = prefix_address_wind + hex(address_itr)[2:]
         contract = contract_wind[itr]
         score_now_income = 0
-        score_now_loss = 0
-        power_now_generated = 0
+        score_now_loss = 0 # отличия
+        power_now_generated = 0 # отличия
         power_now_consumed = 0
         path = []
         modules = []
@@ -294,7 +282,7 @@ def get_objects(eng: Engine):
         score_now_loss += contract
 
         if online_wind[itr]:
-            power_now_generated += min(value_wind ** 3 * koaf_wind_gen[itr], max_power_wind)
+            power_now_generated += min(eng.get_by_type('wind') ** 3 * koaf_wind_gen[itr], max_power_wind)
 
         data_obj.append(
             {
@@ -336,9 +324,9 @@ def get_objects(eng: Engine):
         for itr_line in range(0, len(line_hospital[itr])):
             path.append([{"line": line_hospital[itr][itr_line], "id": path_hospital[itr][itr_line]}])
 
-        power_now_consumed += value_hospital
+        power_now_consumed += eng.get_by_type('hospital')
 
-        score_now_income += contract_hospital[itr] * value_hospital
+        score_now_income += contract_hospital[itr] * eng.get_by_type('hospital')
 
         data_obj.append(
             {
@@ -380,9 +368,9 @@ def get_objects(eng: Engine):
         for itr_line in range(0, len(line_factory[itr])):
             path.append([{"line": line_factory[itr][itr_line], "id": path_factory[itr][itr_line]}])
 
-        power_now_consumed += value_factory
+        power_now_consumed += eng.get_by_type("factory")
 
-        score_now_income += contract_factory[itr] * value_factory
+        score_now_income += contract_factory[itr] * eng.get_by_type('factory')
 
         data_obj.append(
             {
@@ -424,9 +412,9 @@ def get_objects(eng: Engine):
         for itr_line in range(0, len(line_houseA[itr])):
             path.append([{"line": line_houseA[itr][itr_line], "id": path_houseA[itr][itr_line]}])
 
-        power_now_consumed += value_houseA
+        power_now_consumed += eng.get_by_type('houseA')
 
-        score_now_income += contract_houseA[itr] * value_houseA
+        score_now_income += contract_houseA[itr] * eng.get_by_type('houseA')
 
         data_obj.append(
             {
@@ -468,9 +456,9 @@ def get_objects(eng: Engine):
         for itr_line in range(0, len(line_houseB[itr])):
             path.append([{"line": line_houseB[itr][itr_line], "id": path_houseB[itr][itr_line]}])
 
-        power_now_consumed += value_houseB
+        power_now_consumed += eng.get_by_type('houseB')
 
-        score_now_income += contract_houseB[itr] * value_houseB
+        score_now_income += contract_houseB[itr] * eng.get_by_type('houseB')
 
         data_obj.append(
             {

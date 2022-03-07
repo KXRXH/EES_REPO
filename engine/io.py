@@ -1,11 +1,8 @@
-import random
-from collections import defaultdict, namedtuple, UserList
-from argparse import Namespace
+from collections import defaultdict
 import csv
-from engine.engine_const import *
 
 
-def get_weather_data(weather_data_file):
+def get_weather_data(weather_data_file, weather_objects, weather_way):
     if '.csv' in weather_data_file:
         weather_data, real_weather = get_file_weather_data(weather_data_file)
     else:

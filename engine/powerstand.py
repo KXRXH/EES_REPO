@@ -1,6 +1,9 @@
-# act_tick = 26
-
+# self.act_tick = 26
+from engine.engine import *
 from collections import namedtuple
+from get_objects import get_objects
+from argparse import Namespace
+
 
 __all__ = [
     "Powerstand", "Object", "Line", "Powerline",
@@ -170,25 +173,25 @@ def make_forecasts(d):
 class Powerstand:
     GRAPH_COUNT = 4
 
-    def __init__(self, data):
+    def __init__(self, eng: Engine):
 
         self.__orders = orders = []
         self.__station_index = dict()
         self.__storage_index = dict()
         self.__user_data = [[] for _ in range(self.GRAPH_COUNT)]
 
-        self.tick = act_tick
+        self.tick = eng.act_tick
         self.gameLength = end_tick - start_tick
-        self.scoreDelta = all_received_money - all_spent_money
+        self.scoreDelta = eng.all_received_money - eng.all_spent_money
 
         self.fails = get_fails()
 
-        self.sun = Historic(real_weather['solar'][act_tick], real_weather['solar'][0:act_tick])
-        self.wind = Historic(real_weather['wind'][act_tick], real_weather['wind'][0:act_tick])
-        self.hospital = Historic(real_weather['hospital'][act_tick], real_weather['hospital'][0:act_tick])
-        self.factory = Historic(real_weather['factory'][act_tick], real_weather['factory'][0:act_tick])
-        self.houseA = Historic(real_weather['houseA'][act_tick], real_weather['houseA'][0:act_tick])
-        self.houseB = Historic(real_weather['houseB'][act_tick], real_weather['houseB'][0:act_tick])
+        self.sun = Historic(real_weather['solar'][self.act_tick], real_weather['solar'][0:self.act_tick])
+        self.wind = Historic(real_weather['wind'][self.act_tick], real_weather['wind'][0:self.act_tick])
+        self.hospital = Historic(real_weather['hospital'][self.act_tick], real_weather['hospital'][0:self.act_tick])
+        self.factory = Historic(real_weather['factory'][self.act_tick], real_weather['factory'][0:self.act_tick])
+        self.houseA = Historic(real_weather['houseA'][self.act_tick], real_weather['houseA'][0:self.act_tick])
+        self.houseB = Historic(real_weather['houseB'][self.act_tick], real_weather['houseB'][0:self.act_tick])
 
         self.forecasts = Data_Weather(make_forecasts(weather_data['solar']),
                                       make_forecasts(weather_data['wind']),
@@ -197,14 +200,13 @@ class Powerstand:
                                       make_forecasts(weather_data['houseA']),
                                       make_forecasts(weather_data['houseB']))
 
-        self.objs = get_objects()
+        self.objs = get_objects(eng)
         self.objects = [make_object(obj, self.__station_index, self.__storage_index)
                         for obj in self.objs]
 
-        self.total_power = Total_Power(received_energy,
-                                       spent_energy,
-                                       energy_player,  # полученно с биржи
-                                       0)  # потери
+        self.total_power = Total_Power(eng.get_received_energy(),
+                                       eng.get_spent_energy(),
+                                       0, 0)  # потери
 
         self.orders = Namespace(
             diesel=lambda address, power: self.__set_diesel(address, power),
@@ -346,17 +348,17 @@ class Powerstand:
 
 
 class ips():
-    def init() -> Powerstand:
+    def init(self) -> Powerstand:
         return Powerstand(None)
 
-    def init_test() -> Powerstand:
-        return from_json(stub_input)
+    def init_test(self) -> Powerstand:
+        return self.from_json()#stub_input)
 
-    def from_json(string) -> Powerstand:
+    def from_json(self, string) -> Powerstand:
         return Powerstand(None)
 
-    def from_file(filename) -> Powerstand:
+    def from_file(self, filename) -> Powerstand:
         return Powerstand(None)
 
-    def from_log(filename, step) -> Powerstand:
+    def from_log(self, filename, step) -> Powerstand:
         return Powerstand(None)
