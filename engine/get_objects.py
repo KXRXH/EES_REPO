@@ -1,8 +1,8 @@
-from engine_const import *
+from engine.engine_const import *
 from engine.engine import Engine
 
 
-def get_objects(eng: Engine, modules: dict):
+def get_objects(eng: Engine):
     score_then_solar = [[] for _ in range(0, eng.count_wind)]
     power_then_solar = [[] for _ in range(0, eng.count_solar)]
 
@@ -11,7 +11,7 @@ def get_objects(eng: Engine, modules: dict):
 
     # Главная подстанция
     address_itr = 1
-    for itr in range(eng.count_substation):
+    for itr in range(COUNT_SUBSTATIONS):
         address = "M" + hex(address_itr)[2:]
         contract = contract_substation[itr]
         score_now_income = 0

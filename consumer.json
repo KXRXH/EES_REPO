@@ -2,5 +2,17 @@
   "factory": {
     "count": 1,
     "contracts": [1]
+  },
+  "houseA": {
+    "count": 1,
+    "contracts": [1]
+  },
+  "houseB": {
+    "count": 1,
+    "contracts": [1]
+  },
+  "hospital": {
+    "count": 0,
+    "contracts": []
   }
 }

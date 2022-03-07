@@ -1,8 +1,7 @@
-import random
 from collections import defaultdict
+from engine.engine_const import *
 
 random.seed(1337)
-from engine_const import *
 
 crash_tick = [[15, 25], [40, 60], [65, 85]]  # Заглушка
 
@@ -36,6 +35,9 @@ class Engine:
             'storage': [0],
             'diesel': [0]
         }
+        for k in consumer_data:
+            self.history[k] = [0]
+
         self.exchange = 0
         self.consumers = 0
         self.generators = 0
@@ -177,7 +179,7 @@ class Engine:
             self.energy_exchange_n_data.append(0)
             k = -1
         else:
-            if self.get_crash(self):
+            if self.get_crash():
                 cost_power_instant += max(0, abs(_balance_energy) - 10) * received_power_instant
             cost_power_instant += abs(_balance_energy) * spent_power_instant
             self.energy_exchange_n_data.append(abs(_balance_energy))

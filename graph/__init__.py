@@ -1,26 +1,13 @@
-import matplotlib as plt
-
-
 class Graph:
-    def __init__(self):
-        self.fig, self.ax = None, None
-
-        self.Auction = -100
-        self.Consumers = 0
-        self.Generators = 0
-        self.Power_System = 0
-        self.Overload = 0
-        self.Exchange = 0
-        self.Total = 0
-        self.delta_Auction = 0
-        self.delta_Consumers = 0
-        self.delta_Generators = 0
-        self.delta_Power_System = 0
-        self.delta_Overload = 0
-        self.delta_Exchange = 0
-        self.delta_Total = 0
+    def __init__(self, ax, fig, eng):
+        self.fig = fig
+        self.ax = ax
+        self.eng = eng
 
         self.data_actions = []
+
+        self.total = 0
+        self.delta_total = 0
 
         self.energy_solar_data = [0]
         self.energy_wind_data = [0]
@@ -38,6 +25,9 @@ class Graph:
 
         self.max_energy_data = 0.01
 
+    def update_engine(self, new_engine):
+        self.eng = new_engine
+
     @staticmethod
     def normalise_y_data(y1, y2, k=1) -> list:
         return [k * (y1[i] + k * (y2[i])) for i in range(0, len(y1))]
@@ -49,19 +39,11 @@ class Graph:
             return "".join(('+', str(data), 'Р'))
         return "".join((str(data), 'Р'))
 
-    def graph_init(self):
-        self.fig, self.ax = plt.subplots(2, 1)
-
-        self.fig.set_figwidth(20), self.fig.set_figheight(10)
-
-        self.ax[0].clear(), self.ax[1].clear()
-
-        self.ax[0].set_xlim(0, 101), self.ax[1].set_xlim(1, 100)
-
     def generated_Total(self):
-        self.delta_Total = self.delta_Auction + self.delta_Consumers + \
-                           self.delta_Generators + self.delta_Power_System + self.delta_Overload + self.delta_Exchange
-        self.Total = self.Auction + self.Consumers + self.Generators + self.Power_System + self.Overload + self.Exchange
+        self.delta_total = self.eng.delta_consumers + \
+                           self.eng.delta_generators + self.eng.delta_power_system + \
+                           self.eng.delta_exchange
+        self.total = self.eng.consumers + self.eng.generators + self.eng.power_system + self.eng.exchange
 
     def max_value_data_graph(self) -> int:
 
@@ -170,23 +152,23 @@ class Graph:
         box_x_data = range(23, 57)
         self.ax[1].fill_between(box_x_data, [90 for _ in box_x_data], [-100 for _ in box_x_data], facecolor='#ffffc3')
 
-        text_about_sys_data = self.normalise_num_for_str(self.Auction) + '\n' + self.normalise_num_for_str(
-            self.Consumers) + '\n'
-        text_about_sys_data += self.normalise_num_for_str(self.Generators) + '\n' + self.normalise_num_for_str(
-            self.Power_System) + '\n'
-        text_about_sys_data += self.normalise_num_for_str(self.Overload) + '\n' + self.normalise_num_for_str(
-            self.Exchange)
-        text_about_sys_data += '\n\n' + self.normalise_num_for_str(self.Total)
+        text_about_sys_data = self.normalise_num_for_str(0) + '\n' + self.normalise_num_for_str(
+            self.eng.consumers) + '\n'
+        text_about_sys_data += self.normalise_num_for_str(self.eng.generators) + '\n' + self.normalise_num_for_str(
+            self.eng.power_system) + '\n'
+        text_about_sys_data += self.normalise_num_for_str(0) + '\n' + self.normalise_num_for_str(
+            self.eng.exchange)
+        text_about_sys_data += '\n\n' + self.normalise_num_for_str(self.total)
 
         text_about_sys_delta = \
             [
-                self.normalise_num_for_str(self.delta_Auction),
-                self.normalise_num_for_str(self.delta_Consumers),
-                self.normalise_num_for_str(self.delta_Generators),
-                self.normalise_num_for_str(self.delta_Power_System),
-                self.normalise_num_for_str(self.delta_Overload),
-                self.normalise_num_for_str(self.delta_Exchange),
-                self.normalise_num_for_str(self.delta_Total)
+                self.normalise_num_for_str(0),
+                self.normalise_num_for_str(self.eng.delta_consumers),
+                self.normalise_num_for_str(self.eng.delta_generators),
+                self.normalise_num_for_str(self.eng.delta_power_system),
+                self.normalise_num_for_str(0),
+                self.normalise_num_for_str(self.eng.delta_exchange),
+                self.normalise_num_for_str(self.delta_total)
             ]
         text_about_sys_end = '____________________________\n\n\n'
         text_about_sys_end += "Игра окончена" if act_tick == end_tick - 1 else ""
@@ -209,7 +191,7 @@ class Graph:
             self.data_actions[0] = '- ' + self.data_actions[0]
             text_action = "\n- ".join(self.data_actions)  # 10
             self.ax[1].text(62, -90, text_action, fontsize=18)
-        except ...:
+        except Exception:
             pass
         else:
             self.ax[1].text(62, -90, '', fontsize=18)

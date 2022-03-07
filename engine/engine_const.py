@@ -16,6 +16,7 @@ CONSUMERS = ['houseA', 'houseB', "factory", "hospital"]
 CONNECTED_DIESEL = ['M1', 'm1']
 COST_DIESEL = 1
 COST_MW_DIESEl = 4  # руб/МВт
+COUNT_SUBSTATIONS = 1
 
 # Рынок мгновенной мощности
 spent_power_instant = 1  # руб/МВт
@@ -28,8 +29,6 @@ score_then_mini_substationB = [[]]
 power_then_mini_substationB = [[]]
 score_then_mini_substationA = [[]]
 power_then_mini_substationA = [[]]
-score_then_substation = [[]]
-power_then_substation = [[]]
 score_then_storage = [[]]
 power_then_storage = [[]]
 charge_then_storage = [[]]
@@ -42,8 +41,6 @@ prefix_address_substation = 'M'
 contract_substation = [0]
 line_substation = [[]]
 path_substation = [[]]
-score_then_substation = [[]]
-power_then_substation = [[]]
 online_substation = [True]
 
 
@@ -53,8 +50,6 @@ prefix_address_mini_substationB = 'm'
 contract_mini_substationB = [2]
 line_mini_substationB = [[1]]
 path_mini_substationB = [[["main", 1]]]
-score_then_mini_substationB = [[]]
-power_then_mini_substationB = [[]]
 online_mini_substationB = [True]
 
 # Мини подстанция А +
@@ -63,8 +58,6 @@ prefix_address_mini_substationA = 'e'
 contract_mini_substationA = [5]
 line_mini_substationA = [[1]]
 path_mini_substationA = [[["main", 1]]]
-score_then_mini_substationA = [[]]
-power_then_mini_substationA = [[]]
 online_mini_substationA = [True]
 
 # Дизель +
@@ -91,9 +84,6 @@ prefix_address_storage = 't'
 contract_storage = [5]
 line_storage = [[1]]
 path_storage = [[["main", 1]]]
-score_then_storage = [[]]
-power_then_storage = [[]]
-charge_then_storage = [[]]
 online_storage = [True]
 max_power_storage = 100
 max_exchange_power_storage = 15 # МВт/тик
@@ -172,7 +162,7 @@ end_tick = 100
 act_tick = start_tick
 
 weather_objects = ['solar', 'wind', 'hospital', 'factory', 'houseA', 'houseB']
-weather_way = [random.randint(1, COUNT_WEATHER_VALUES) for i in weather_objects]
+weather_way = [random.randint(1, COUNT_WEATHER_VALUES) for _ in weather_objects]
 
 from engine.io import get_weather_data
 

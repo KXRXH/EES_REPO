@@ -1,7 +1,7 @@
-# self.act_tick = 26
+# self.eng.act_tick = 26
 from engine.engine import *
 from collections import namedtuple
-from get_objects import get_objects
+from engine.get_objects import get_objects
 from argparse import Namespace
 
 
@@ -173,25 +173,26 @@ def make_forecasts(d):
 class Powerstand:
     GRAPH_COUNT = 4
 
-    def __init__(self, eng: Engine):
+    def __init__(self, eng: Engine, score_delta):
+
+        self.eng = eng
 
         self.__orders = orders = []
         self.__station_index = dict()
         self.__storage_index = dict()
         self.__user_data = [[] for _ in range(self.GRAPH_COUNT)]
 
-        self.tick = eng.act_tick
         self.gameLength = end_tick - start_tick
-        self.scoreDelta = eng.all_received_money - eng.all_spent_money
+        self.scoreDelta = score_delta
 
         self.fails = get_fails()
 
-        self.sun = Historic(real_weather['solar'][self.act_tick], real_weather['solar'][0:self.act_tick])
-        self.wind = Historic(real_weather['wind'][self.act_tick], real_weather['wind'][0:self.act_tick])
-        self.hospital = Historic(real_weather['hospital'][self.act_tick], real_weather['hospital'][0:self.act_tick])
-        self.factory = Historic(real_weather['factory'][self.act_tick], real_weather['factory'][0:self.act_tick])
-        self.houseA = Historic(real_weather['houseA'][self.act_tick], real_weather['houseA'][0:self.act_tick])
-        self.houseB = Historic(real_weather['houseB'][self.act_tick], real_weather['houseB'][0:self.act_tick])
+        self.sun = Historic(real_weather['solar'][self.eng.act_tick], real_weather['solar'][0:self.eng.act_tick])
+        self.wind = Historic(real_weather['wind'][self.eng.act_tick], real_weather['wind'][0:self.eng.act_tick])
+        self.hospital = Historic(real_weather['hospital'][self.eng.act_tick], real_weather['hospital'][0:self.eng.act_tick])
+        self.factory = Historic(real_weather['factory'][self.eng.act_tick], real_weather['factory'][0:self.eng.act_tick])
+        self.houseA = Historic(real_weather['houseA'][self.eng.act_tick], real_weather['houseA'][0:self.eng.act_tick])
+        self.houseB = Historic(real_weather['houseB'][self.eng.act_tick], real_weather['houseB'][0:self.eng.act_tick])
 
         self.forecasts = Data_Weather(make_forecasts(weather_data['solar']),
                                       make_forecasts(weather_data['wind']),
@@ -223,7 +224,7 @@ class Powerstand:
         )
 
     def __check_address(self, address):
-        return address in self.__station_index
+        return tuple(address) in self.__station_index
 
     def __set_diesel(self, address, power):
         try:
@@ -250,31 +251,18 @@ class Powerstand:
                 raise ("Отрицательное значение энергии в приказе на аккумулятор. Приказ не принят.")
         except ValueError:
             raise ("Для приказа на аккумулятор нужен float-совместимый тип. Приказ не принят.")
-        if address not in list(self.__storage_index):
+        if tuple(address) not in list(self.__storage_index):
             raise ("Такого накопителя/подстанции не существует. Приказ не принят.")
 
         order = "charge" if charge else "discharge"
-        global delta_accamulator
+        '''
         global charge_accamulator
         global delta_storage
         global charge_storage
+        '''
         local_power = power
         if prefix_address_storage in address:
-            itr = 0
-            for obj in self.objects:
-                if prefix_address_storage in obj.address: itr += 1
-                if obj.address != address: continue
-                itr -= 1
-                if charge:
-                    delta_storage[itr] = min(local_power, max_power_storage - charge_storage[itr],
-                                             max_exchange_power_storage)
-                    charge_storage[itr] += delta_storage[itr]
-                    local_power -= delta_storage[itr]
-                else:
-                    delta_storage[itr] = -1 * min(local_power, charge_storage[itr], max_exchange_power_storage)
-                    charge_storage[itr] += delta_storage[itr]
-                    local_power -= -delta_storage[itr]
-            if itr == len(self.objects): raise ("Такого накопителя/подстанции не существует. Приказ не принят.")
+            pass
         else:
             for itr, connect in enumerate(connected_accamulator):
                 if address == tuple(connect):
@@ -333,7 +321,7 @@ class Powerstand:
             return "неизвестный приказ"
 
     def save_and_exit(self):
-        self.orders.humanize
+        self.orders.humanize()
         return 'Конец выполнения'
 
     def get_user_data(self):
@@ -348,17 +336,5 @@ class Powerstand:
 
 
 class ips():
-    def init(self) -> Powerstand:
-        return Powerstand(None)
-
-    def init_test(self) -> Powerstand:
-        return self.from_json()#stub_input)
-
-    def from_json(self, string) -> Powerstand:
-        return Powerstand(None)
-
-    def from_file(self, filename) -> Powerstand:
-        return Powerstand(None)
-
-    def from_log(self, filename, step) -> Powerstand:
-        return Powerstand(None)
+    def init(eng: Engine, delta) -> Powerstand:
+        return Powerstand(eng, delta)
