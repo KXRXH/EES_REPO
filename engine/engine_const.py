@@ -72,7 +72,7 @@ qty_diesel = 2
 power_diesel = [0, 0]
 connected_diesel = ['M1', 'm1']
 max_power_diesel = 5
-    cost_diesel = 1
+cost_diesel = 1
 cost_MW_diesel = 4 # руб/МВт
 
 # Аккамулятор +
@@ -174,6 +174,8 @@ act_tick = start_tick
 weather_objects = ['solar', 'wind', 'hospital', 'factory', 'houseA', 'houseB']
 weather_way = [random.randint(1, COUNT_WEATHER_VALUES) for i in weather_objects]
 
-from io import get_weather_data
+from engine.io import get_weather_data
 
-weather_data, real_weather = get_weather_data()
+weather_data, real_weather = get_weather_data(
+    FILE, COUNT_WEATHER_VALUES, weather_objects, weather_way
+)

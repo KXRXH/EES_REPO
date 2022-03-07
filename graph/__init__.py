@@ -1,4 +1,4 @@
-import plt
+import matplotlib as plt
 
 
 class Graph:

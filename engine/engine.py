@@ -8,7 +8,7 @@ crash_tick = [[15, 25], [40, 60], [65, 85]]  # Заглушка
 
 
 class Engine:
-    def __init__(self, real_weather, count_solar, count_wind, count_substation, consumer_data):
+    def __init__(self, count_solar, count_wind, consumer_data):
         self.real_weather = real_weather
         # Это типо активный тик.
         self.act_tick = 0
@@ -17,7 +17,6 @@ class Engine:
         self.koaf_wind_gen = [0.011 + random.uniform(-0.004, 0.004) for _ in range(0, count_wind)]
         self.count_solar = count_solar
         self.count_wind = count_wind
-        self.count_substation = count_substation
         self.online_wind = [True] * self.count_wind
         self.online_solar = [True] * self.count_solar
         self.delta_storage = [0]
@@ -163,16 +162,11 @@ class Engine:
 
     # если энергии все еще не хватает, то покупаем из внешней сети
     def get_money_remains(self):
-        global Exchange
-        global delta_Exchange
-        global energy_exchange_p_data
-        global energy_exchange_n_data
-
         cost_power_instant = 0
         _balance_energy = self.balance_energy
 
         if _balance_energy < 0:
-            if self.get_crash(self):
+            if self.get_crash():
                 cost_power_instant += max(0, abs(_balance_energy) - 10) * received_power_instant
             cost_power_instant += abs(_balance_energy) * received_power_instant
             energy_exchange_p_data.append(abs(_balance_energy))
