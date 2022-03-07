@@ -27,6 +27,8 @@ class Engine:
         self.delta_power_system = 0
         self.power_diesel = [0, 0]
         self.balance_energy = 0
+        self.energy_exchange_p_data = [0]
+        self.energy_exchange_n_data = [0]
 
         self.history = {
             'solar': [0],
@@ -34,9 +36,10 @@ class Engine:
             'storage': [0],
             'diesel': [0]
         }
-
+        self.exchange = 0
         self.consumers = 0
         self.generators = 0
+        self.delta_exchange = 0
         self.delta_consumers = 0
         self.delta_generators = 0
 
@@ -137,7 +140,8 @@ class Engine:
         '''
         spent_diesel = 0
         gens = defaultdict(int)
-        for generator, contracts in generators.items():
+        for generator, c in generators.items():
+            contracts = c["contracts"]
             for cost in contracts:
                 gens[generator] = cost
 
@@ -169,35 +173,28 @@ class Engine:
             if self.get_crash():
                 cost_power_instant += max(0, abs(_balance_energy) - 10) * received_power_instant
             cost_power_instant += abs(_balance_energy) * received_power_instant
-            energy_exchange_p_data.append(abs(_balance_energy))
-            energy_exchange_n_data.append(0)
+            self.energy_exchange_p_data.append(abs(_balance_energy))
+            self.energy_exchange_n_data.append(0)
             k = -1
         else:
             if self.get_crash(self):
                 cost_power_instant += max(0, abs(_balance_energy) - 10) * received_power_instant
             cost_power_instant += abs(_balance_energy) * spent_power_instant
-            energy_exchange_n_data.append(abs(_balance_energy))
-            energy_exchange_p_data.append(0)
+            self.energy_exchange_n_data.append(abs(_balance_energy))
+            self.energy_exchange_p_data.append(0)
             k = 1
 
-        delta_Exchange = cost_power_instant * k
-        Exchange += cost_power_instant * k
+        self.delta_exchange = cost_power_instant * k
+        self.exchange += cost_power_instant * k
 
         return cost_power_instant
 
     # Прибыль
-    def get_received_consumer(self, contracts):
-        '''
-        contracts = {
-            "hospital": [5, 3, 4],
-            "factory": [4, 5, 3],
-        }
-        '''
+    def get_received_consumer(self, consumers):
         profit = defaultdict(int)
-
-        for consumer, contract in contracts.items():
+        for consumer, data in consumers.items():
             consumer_profit = 0
-            for cost in contract:
+            for cost in data['contracts']:
                 consumer_profit += cost * self.get_by_type(consumer)
 
             profit[consumer] = consumer_profit

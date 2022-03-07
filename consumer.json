@@ -1,5 +1,6 @@
 {
   "factory": {
-    "count": 1
+    "count": 1,
+    "contracts": [1]
   }
 }
