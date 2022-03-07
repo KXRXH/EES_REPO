@@ -7,6 +7,7 @@ Cell = namedtuple("Cell", ("charge", "delta"))
 
 
 def player_actions(eng: Engine, delta):
+    return
     global charges_in_next2  # !!!!!!!!!!!!!!!!!!! закоментировать на стенде
 
     from collections import defaultdict

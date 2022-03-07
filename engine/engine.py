@@ -33,7 +33,8 @@ class Engine:
             'solar': [0],
             'wind': [0],
             'storage': [0],
-            'diesel': [0]
+            'diesel': [0],
+            'storage_n': [0]
         }
         for k in consumer_data:
             self.history[k] = [0]
@@ -127,7 +128,7 @@ class Engine:
                 energy['accumulator'] += delta
                 self.delta_accumulator[itr] = 0
 
-        self.history['storage'].append(
+        self.history['storage_n'].append(
             energy['accumulator'] + energy['storage']
         )
         return sum(list(energy.values()))

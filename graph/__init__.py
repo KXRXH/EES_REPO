@@ -9,24 +9,25 @@ class Graph:
         self.total = 0
         self.delta_total = 0
 
-        self.energy_solar_data = [0]
-        self.energy_wind_data = [0]
-        self.energy_accamulator_p_data = [0]
-        self.energy_diesel_data = [0]
-
         self.energy_hospital_data = [0]
         self.energy_factory_data = [0]
         self.energy_houseA_data = [0]
         self.energy_houseB_data = [0]
-        self.energy_accamulator_n_data = [0]
 
         self.energy_exchange_p_data = [0]
         self.energy_exchange_n_data = [0]
 
         self.max_energy_data = 0.01
 
-    def update_engine(self, new_engine):
+    def update_engine(self, fig, ax, new_engine):
         self.eng = new_engine
+        self.fig = fig
+        self.ax = ax
+        self.fig.set_figwidth(20), self.fig.set_figheight(10)
+
+        self.ax[0].clear(), self.ax[1].clear()
+
+        self.ax[0].set_xlim(0, 101), self.ax[1].set_xlim(1, 100)
 
     @staticmethod
     def normalise_y_data(y1, y2, k=1) -> list:
@@ -47,11 +48,12 @@ class Graph:
 
     def max_value_data_graph(self) -> int:
 
-        positive_value = self.energy_solar_data[-1] + self.energy_wind_data[-1] + self.energy_accamulator_p_data[-1] \
-                         + self.energy_diesel_data[-1] + self.energy_exchange_p_data[-1]
+        positive_value = self.eng.history['solar'][-1] + self.eng.history['wind'][-1] + \
+                         self.eng.history['storage'][-1] \
+                         + self.eng.history['diesel'][-1] + self.energy_exchange_p_data[-1]
 
         negative_value = self.energy_hospital_data[-1] + self.energy_factory_data[-1] + self.energy_houseA_data[-1] \
-                         + self.energy_houseB_data[-1] + self.energy_accamulator_n_data[-1] \
+                         + self.energy_houseB_data[-1] + self.eng.history['storage_n'][-1] \
                          + self.energy_exchange_n_data[-1]
 
         if positive_value > self.max_energy_data:
@@ -77,16 +79,14 @@ class Graph:
         self.ax[0].plot(main_axis_x, main_axis_y, color='black', linewidth=2)
 
         # Рисование 1 графика
-        y_solar = self.normalise_y_data(self.energy_solar_data, main_axis_y)
-        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_solar, main_axis_y[:act_tick + 2], facecolor='#FFEC14')
+        y_solar = self.normalise_y_data(self.eng.history['solar'], main_axis_y)
 
-        y_wind = self.normalise_y_data(self.energy_wind_data, y_solar)
-        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_wind, y_solar, facecolor='#A3FFFF')
+        y_wind = self.normalise_y_data(self.eng.history['wind'], y_solar)
 
-        y_accamulator_p = self.normalise_y_data(self.energy_accamulator_p_data, y_wind)
+        y_accamulator_p = self.normalise_y_data(self.eng.history['storage'], y_wind)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_accamulator_p, y_wind, facecolor='#3737FF')
 
-        y_diesel = self.normalise_y_data(self.energy_diesel_data, y_accamulator_p)
+        y_diesel = self.normalise_y_data(self.eng.history['diesel'], y_accamulator_p)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_diesel, y_accamulator_p, facecolor='#9C9C9C')
 
         y_exchange_p = self.normalise_y_data(self.energy_exchange_p_data, y_diesel)
@@ -100,16 +100,17 @@ class Graph:
 
         y_house_a = self.normalise_y_data(self.energy_houseA_data, y_factory, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_house_a, y_factory, facecolor='#9DC941')
-
+        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_wind, y_solar, facecolor='#A3FFFF')
+        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_solar, main_axis_y[:act_tick + 2], facecolor='#FFEC14')
         y_house_b = self.normalise_y_data(self.energy_houseB_data, y_house_a, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_house_b, y_house_a, facecolor='#BFE471')
-
-        y_accamulator_n = self.normalise_y_data(self.energy_accamulator_n_data, y_house_b, k=-1)
+        '''
+        y_accamulator_n = self.normalise_y_data(self.eng.history['storage_n'], y_house_b, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_accamulator_n, y_house_b, facecolor='#3737FF')
-
         y_exchange_n = self.normalise_y_data(self.energy_exchange_n_data, y_accamulator_n, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_n, y_accamulator_n, facecolor='#000000')
 
+        '''
         for start, end in crash_tick:
             self.ax[0].plot(range(start + 1, end + 1), [0 for _ in range(start + 1, end + 1)], color='red',
                             linestyle=' ', marker='o')
@@ -179,7 +180,8 @@ class Graph:
         y_delta = -58
         for delta_text in text_about_sys_delta[::-1]:
             self.ax[1].text(51.5, y_delta, delta_text, fontsize=12, color='grey')
-            y_delta += 18 if delta_text == text_about_sys_delta[-1] else 0
+            if delta_text == text_about_sys_delta[-1]:
+                y_delta += 7.5
             y_delta += 17.8
         self.ax[1].text(40, -90, text_about_sys_end, fontsize=20, ha='center', fontweight='bold')
 

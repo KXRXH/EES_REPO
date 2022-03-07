@@ -1,1 +1,1 @@
-{'flag_Sun': True, 'flag_Hospital': True, 'flag_Factory': True, 'flag_HouseA': True, 'flag_HouseB': True, 'waySun': 5, 'wayWind': 0, 'wayHospital': 5, 'wayFactory': 6, 'wayHouseA': 5, 'wayHouseB': 4, 'wind_way': [0, 1, 2, 3, 7], 'sun_k': [0.7235505713902941]}
+{'flag_Sun': True, 'flag_Hospital': True, 'flag_Factory': True, 'flag_HouseA': True, 'flag_HouseB': True, 'waySun': 5, 'wayWind': 2, 'wayHospital': 5, 'wayFactory': 6, 'wayHouseA': 5, 'wayHouseB': 4, 'wind_way': [2], 'sun_k': [0.7235505713902941]}

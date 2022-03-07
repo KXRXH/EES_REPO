@@ -33,15 +33,23 @@ class Game:
 
     def print_tick(self, i):
         print('\n--------------------------------------------------------------------------')
-        print(f'Тик: {i}')
+        print('Тик:', i)
         print('\nВывод игрока:')
 
     def one_tick(self, i):
         self.reset_vars()
         self.eng.act_tick = i
+        # Погода
+        # Авария
+        flag_crash = self.eng.get_crash()
+
+        # Данные по энергии
+        received_energy = self.eng.get_received_energy()  # получено
+        spent_energy = self.eng.get_spent_energy()  # потрачено
+        balance_energy = received_energy - spent_energy  # баланс
+
         # Оплата за генераторы
-        spent_money_generators = self.eng.get_money_generators(self.generators)
-        self.all_spent_money += spent_money_generators
+        self.all_spent_money = self.eng.get_money_generators(self.generators)
         '''
         # Биржа энергии между игроками
         energy_player, money_player = 0, 0
@@ -73,7 +81,7 @@ class Game:
         # Баланс денег
         self.balance_money += self.all_received_money - self.all_spent_money
 
-        self.graph.update_engine(self.eng)
+        self.graph.update_engine(self.fig, self.ax, self.eng)
         self.graph.draw_first_graph(i, crash_tick=engine.crash_tick)
         self.graph.draw_second_graph(i, end_tick=engine.end_tick)
 
