@@ -22,9 +22,10 @@ def tick(i):
 
 
 def main():
-    if current_tick + 1 == engine.end_tick:
-        return
     ani = animation.FuncAnimation(fig, tick, interval=SPEED)
+    if current_tick + 1 >= engine.end_tick:
+        ani.event_source.stop()
+        return
     plt.show()
 
 
