@@ -1,7 +1,6 @@
 # self.eng.act_tick = 26
 from engine.engine import *
 from collections import namedtuple
-from engine.get_objects import get_objects
 from argparse import Namespace
 
 
@@ -201,9 +200,8 @@ class Powerstand:
                                       make_forecasts(weather_data['houseA']),
                                       make_forecasts(weather_data['houseB']))
 
-        self.objs = get_objects(eng)
         self.objects = [make_object(obj, self.__station_index, self.__storage_index)
-                        for obj in self.objs]
+                        for obj in self.eng.objs]
 
         self.total_power = Total_Power(eng.get_received_energy(),
                                        eng.get_spent_energy(),

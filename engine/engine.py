@@ -1,5 +1,6 @@
 from collections import defaultdict
 from engine.engine_const import *
+from engine.get_objects import Objects
 
 random.seed(1337)
 
@@ -45,6 +46,7 @@ class Engine:
         self.delta_exchange = 0
         self.delta_consumers = 0
         self.delta_generators = 0
+        self.objs = Objects(self).get_objects()
 
     def get_by_type(self, object_type: str):
         """
