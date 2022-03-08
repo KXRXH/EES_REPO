@@ -1,9 +1,11 @@
+import engine
 from game import Game
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 
-SPEED = 50
+
+SPEED = 1
 
 fig, ax = plt.subplots(2, 1)
 fig.set_figwidth(20)
@@ -19,6 +21,12 @@ def tick(i):
     current_tick += 1
 
 
-# Анимация
-ani = animation.FuncAnimation(fig, tick, interval=SPEED)
-plt.show()
+def main():
+    if current_tick + 1 == engine.end_tick:
+        return
+    ani = animation.FuncAnimation(fig, tick, interval=SPEED)
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

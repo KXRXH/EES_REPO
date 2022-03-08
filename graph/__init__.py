@@ -177,7 +177,7 @@ class Graph:
         for delta_text in text_about_sys_delta[::-1]:
             self.ax[1].text(51.5, y_delta, delta_text, fontsize=12, color='grey')
             if delta_text == text_about_sys_delta[-1]:
-                y_delta += 7.5
+                y_delta += 18
             y_delta += 17.8
         self.ax[1].text(40, -90, text_about_sys_end, fontsize=20, ha='center', fontweight='bold')
 

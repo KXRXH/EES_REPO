@@ -146,7 +146,7 @@ class Engine:
         for generator, c in generators.items():
             contracts = c["contracts"]
             for cost in contracts:
-                gens[generator] = cost
+                gens[generator] += cost
 
         for itr, connect in enumerate(CONNECTED_DIESEL):
             if not connect is None:
@@ -200,7 +200,7 @@ class Engine:
             for cost in data['contracts']:
                 consumer_profit += cost * self.get_by_type(consumer)
 
-            profit[consumer] = consumer_profit
+            profit[consumer] += consumer_profit
 
         total_profit = sum(list(profit.values()))
         self.delta_consumers = total_profit
