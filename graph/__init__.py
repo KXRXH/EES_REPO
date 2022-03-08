@@ -1,23 +1,19 @@
+import engine
+
+
 class Graph:
     def __init__(self, ax, fig, eng):
-        self.fig = fig
-        self.ax = ax
-        self.eng = eng
-
         self.data_actions = []
 
         self.total = 0
         self.delta_total = 0
 
-        self.energy_hospital_data = [0]
-        self.energy_factory_data = [0]
-        self.energy_houseA_data = [0]
-        self.energy_houseB_data = [0]
-
         self.energy_exchange_p_data = [0]
         self.energy_exchange_n_data = [0]
 
         self.max_energy_data = 0.01
+
+        self.update_engine(fig, ax, eng)
 
     def update_engine(self, fig, ax, new_engine):
         self.eng = new_engine
@@ -28,6 +24,7 @@ class Graph:
         self.ax[0].clear(), self.ax[1].clear()
 
         self.ax[0].set_xlim(0, 101), self.ax[1].set_xlim(1, 100)
+        self.generated_Total()
 
     @staticmethod
     def normalise_y_data(y1, y2, k=1) -> list:
@@ -37,8 +34,8 @@ class Graph:
     def normalise_num_for_str(data) -> str:
         data = round(data, 2)
         if data >= 0:
-            return "".join(('+', str(data), 'Р'))
-        return "".join((str(data), 'Р'))
+            return "".join(('+', str(data), engine.RUBLE))
+        return "".join((str(data), engine.RUBLE))
 
     def generated_Total(self):
         self.delta_total = self.eng.delta_consumers + \
@@ -52,8 +49,9 @@ class Graph:
                          self.eng.history['storage'][-1] \
                          + self.eng.history['diesel'][-1] + self.energy_exchange_p_data[-1]
 
-        negative_value = self.energy_hospital_data[-1] + self.energy_factory_data[-1] + self.energy_houseA_data[-1] \
-                         + self.energy_houseB_data[-1] + self.eng.history['storage_n'][-1] \
+        negative_value = self.eng.history["hospital"][-1] + self.eng.history["factory"][-1] + \
+                         self.eng.history["houseA"][-1] \
+                         + self.eng.history["houseB"][-1] + self.eng.history['storage_n'][-1] \
                          + self.energy_exchange_n_data[-1]
 
         if positive_value > self.max_energy_data:
@@ -92,17 +90,17 @@ class Graph:
         y_exchange_p = self.normalise_y_data(self.energy_exchange_p_data, y_diesel)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_p, y_diesel, facecolor='#000000')
 
-        y_hospital = self.normalise_y_data(self.energy_hospital_data, main_axis_y, k=-1)
+        y_hospital = self.normalise_y_data(self.eng.history["hospital"], main_axis_y, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_hospital, main_axis_y[:act_tick + 2], facecolor='#FF9494')
 
-        y_factory = self.normalise_y_data(self.energy_factory_data, y_hospital, k=-1)
+        y_factory = self.normalise_y_data(self.eng.history["factory"], y_hospital, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_factory, y_hospital, facecolor='#FFFDBB')
 
-        y_house_a = self.normalise_y_data(self.energy_houseA_data, y_factory, k=-1)
+        y_house_a = self.normalise_y_data(self.eng.history["houseA"], y_factory, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_house_a, y_factory, facecolor='#9DC941')
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_wind, y_solar, facecolor='#A3FFFF')
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_solar, main_axis_y[:act_tick + 2], facecolor='#FFEC14')
-        y_house_b = self.normalise_y_data(self.energy_houseB_data, y_house_a, k=-1)
+        y_house_b = self.normalise_y_data(self.eng.history["houseB"], y_house_a, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_house_b, y_house_a, facecolor='#BFE471')
         '''
         y_accamulator_n = self.normalise_y_data(self.eng.history['storage_n'], y_house_b, k=-1)
@@ -160,17 +158,15 @@ class Graph:
         text_about_sys_data += self.normalise_num_for_str(0) + '\n' + self.normalise_num_for_str(
             self.eng.exchange)
         text_about_sys_data += '\n\n' + self.normalise_num_for_str(self.total)
-
-        text_about_sys_delta = \
-            [
-                self.normalise_num_for_str(0),
-                self.normalise_num_for_str(self.eng.delta_consumers),
-                self.normalise_num_for_str(self.eng.delta_generators),
-                self.normalise_num_for_str(self.eng.delta_power_system),
-                self.normalise_num_for_str(0),
-                self.normalise_num_for_str(self.eng.delta_exchange),
-                self.normalise_num_for_str(self.delta_total)
-            ]
+        text_about_sys_delta = [
+            self.normalise_num_for_str(0),
+            self.normalise_num_for_str(self.eng.delta_consumers),
+            self.normalise_num_for_str(self.eng.delta_generators),
+            self.normalise_num_for_str(self.eng.delta_power_system),
+            self.normalise_num_for_str(0),
+            self.normalise_num_for_str(self.eng.delta_exchange),
+            self.normalise_num_for_str(self.delta_total)
+        ]
         text_about_sys_end = '____________________________\n\n\n'
         text_about_sys_end += "Игра окончена" if act_tick == end_tick - 1 else ""
 
