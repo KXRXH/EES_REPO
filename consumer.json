@@ -1,0 +1,18 @@
+{
+  "factory": {
+    "count": 0,
+    "contracts": [0]
+  },
+  "houseA": {
+    "count": 1,
+    "contracts": [10]
+  },
+  "houseB": {
+    "count": 0,
+    "contracts": [0]
+  },
+  "hospital": {
+    "count": 0,
+    "contracts": []
+  }
+}
