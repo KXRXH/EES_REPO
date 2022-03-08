@@ -1,0 +1,32 @@
+[
+  {
+    "address": "e2",
+    "line": 1,
+    "station": "M2"
+  },
+  {
+    "address": "m3",
+    "line": 2,
+    "station": "M2"
+  },
+  {
+    "address": "e4",
+    "line": 3,
+    "station": "M2"
+  },
+  {
+    "address": "h1",
+    "line": 2,
+    "station": "m3"
+  },
+  {
+    "address": "d1",
+    "line": 2,
+    "station": "m3"
+  },
+  {
+    "address": "d2",
+    "line": 2,
+    "station": "m3"
+  }
+]
