@@ -85,6 +85,10 @@ class Engine:
 
             type = obj['class']
             if type in TYPE_STATION:
+                if len(obj['score']['then']) == 0:
+                    self.delta_power_system -= obj['score']['now']['loss']
+                else:
+                    self.delta_power_system -= obj['score']['now']['loss'] - obj['score']['then'][-1]['loss']
                 continue
             if type == 'storage':
                 if len(obj['score']['then']) == 0:
