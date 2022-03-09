@@ -1,23 +1,19 @@
+import engine
+
+
 class Graph:
     def __init__(self, ax, fig, eng):
-        self.fig = fig
-        self.ax = ax
-        self.eng = eng
-
         self.data_actions = []
 
         self.total = 0
         self.delta_total = 0
 
-        self.energy_hospital_data = [0]
-        self.energy_factory_data = [0]
-        self.energy_houseA_data = [0]
-        self.energy_houseB_data = [0]
-
         self.energy_exchange_p_data = [0]
         self.energy_exchange_n_data = [0]
 
         self.max_energy_data = 0.01
+
+        self.update_engine(fig, ax, eng)
 
     def update_engine(self, fig, ax, new_engine):
         self.eng = new_engine
@@ -28,19 +24,18 @@ class Graph:
         self.ax[0].clear(), self.ax[1].clear()
 
         self.ax[0].set_xlim(0, 101), self.ax[1].set_xlim(1, 100)
+        self.generated_Total()
 
     @staticmethod
     def normalise_y_data(y1, y2, k=1) -> list:
-        print([y1[i] for i in range(0, len(y1))])
-        print([y2[i] for i in range(0, len(y2))])
-        return [k * (y1[i] + k * y2[i]) for i in range(0, len(y1))]
+        return [k * (abs(y1[i]) + abs(y2[i])) for i in range(0, len(y1))]
 
     @staticmethod
     def normalise_num_for_str(data) -> str:
         data = round(data, 2)
         if data >= 0:
-            return "".join(('+', str(data), 'Р'))
-        return "".join((str(data), 'Р'))
+            return "".join(('+', str(data), engine.RUBLE))
+        return "".join((str(data), engine.RUBLE))
 
     def generated_Total(self):
         self.delta_total = self.eng.delta_consumers + \
@@ -50,13 +45,13 @@ class Graph:
 
     def max_value_data_graph(self) -> int:
 
-        positive_value = self.eng.history['solar'][-1] + self.eng.history['wind'][-1] + \
-                         self.eng.history['storage'][-1] \
-                         + self.eng.history['diesel'][-1] + self.energy_exchange_p_data[-1]
+        positive_value = self.eng.graph_history['solar'][-1] + self.eng.graph_history['wind'][-1] + \
+                         self.eng.graph_history['storage_p'][-1] + self.eng.graph_history['exchange_p'][-1]
 
-        negative_value = self.energy_hospital_data[-1] + self.energy_factory_data[-1] + self.energy_houseA_data[-1] \
-                         + self.energy_houseB_data[-1] + self.eng.history['storage_n'][-1] \
-                         + self.energy_exchange_n_data[-1]
+        negative_value = self.eng.graph_history["hospital"][-1] + self.eng.graph_history["factory"][-1] + \
+                         self.eng.graph_history["houseA"][-1] \
+                         + self.eng.graph_history["houseB"][-1] + self.eng.graph_history['storage_n'][-1] \
+                         + self.eng.graph_history['exchange_n'][-1]
 
         if positive_value > self.max_energy_data:
             self.max_energy_data = positive_value
@@ -65,7 +60,7 @@ class Graph:
 
         return self.max_energy_data
 
-    def draw_first_graph(self, act_tick: int, crash_tick: list):
+    def draw_first_graph(self, act_tick: int):
         # Настройка 1 графика
         self.ax[0].title.set_text('Генерация/потребление энергии:')
         self.ax[0].title.set_fontsize(30)
@@ -81,31 +76,27 @@ class Graph:
         self.ax[0].plot(main_axis_x, main_axis_y, color='black', linewidth=2)
 
         # Рисование 1 графика
-        y_solar = self.normalise_y_data(self.eng.history['solar'], main_axis_y)
+        y_solar = self.normalise_y_data(self.eng.graph_history['solar'], main_axis_y)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_solar, main_axis_y[:act_tick + 2], facecolor='#FFEC14')
-        y_wind = self.normalise_y_data(self.eng.history['wind'], y_solar)
+        y_wind = self.normalise_y_data(self.eng.graph_history['wind'], y_solar)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_wind, y_solar, facecolor='#A3FFFF')
-        y_storage_p = self.normalise_y_data(self.eng.history['storage'], y_wind)
+        y_storage_p = self.normalise_y_data(self.eng.graph_history['storage_p'], y_wind)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_storage_p, y_wind, facecolor='#3737FF')
-        y_exchange_p = self.normalise_y_data(self.energy_exchange_p_data, y_storage_p)
+        y_exchange_p = self.normalise_y_data(self.eng.graph_history['exchange_p'], y_storage_p)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_p, y_storage_p, facecolor='#000000')
 
-        y_hospital = self.normalise_y_data(self.energy_hospital_data, main_axis_y, k=-1)
+        y_hospital = self.normalise_y_data(self.eng.graph_history['hospital'], main_axis_y, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_hospital, main_axis_y[:act_tick + 2], facecolor='#FF9494')
-        y_factory = self.normalise_y_data(self.energy_factory_data, y_hospital, k=-1)
+        y_factory = self.normalise_y_data(self.eng.graph_history['factory'], y_hospital, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_factory, y_hospital, facecolor='#FFFDBB')
-        y_houseA = self.normalise_y_data(self.energy_houseA_data, y_factory, k=-1)
+        y_houseA = self.normalise_y_data(self.eng.graph_history['houseA'], y_factory, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_houseA, y_factory, facecolor='#9DC941')
-        y_houseB = self.normalise_y_data(self.energy_houseB_data, y_houseA, k=-1)
+        y_houseB = self.normalise_y_data(self.eng.graph_history['houseB'], y_houseA, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_houseB, y_houseA, facecolor='#BFE471')
-        y_storage_n = self.normalise_y_data(self.eng.history['storage_n'], y_houseB, k=-1)
+        y_storage_n = self.normalise_y_data(self.eng.graph_history['storage_n'], y_houseB, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_storage_n, y_houseB, facecolor='#3737FF')
-        y_exchange_n = self.normalise_y_data(self.energy_exchange_n_data, y_storage_n, k=-1)
+        y_exchange_n = self.normalise_y_data(self.eng.graph_history['exchange_n'], y_storage_n, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_n, y_storage_n, facecolor='#000000')
-
-        for start, end in crash_tick:
-            self.ax[0].plot(range(start + 1, end + 1), [0 for _ in range(start + 1, end + 1)], color='red',
-                            linestyle=' ', marker='o')
 
         # Донастройка 1 графика
         y_lim_max = max(abs(self.ax[0].get_ylim()[0]), abs(self.ax[0].get_ylim()[1]))
@@ -152,17 +143,15 @@ class Graph:
         text_about_sys_data += self.normalise_num_for_str(0) + '\n' + self.normalise_num_for_str(
             self.eng.exchange)
         text_about_sys_data += '\n\n' + self.normalise_num_for_str(self.total)
-
-        text_about_sys_delta = \
-            [
-                self.normalise_num_for_str(0),
-                self.normalise_num_for_str(self.eng.delta_consumers),
-                self.normalise_num_for_str(self.eng.delta_generators),
-                self.normalise_num_for_str(self.eng.delta_power_system),
-                self.normalise_num_for_str(0),
-                self.normalise_num_for_str(self.eng.delta_exchange),
-                self.normalise_num_for_str(self.delta_total)
-            ]
+        text_about_sys_delta = [
+            self.normalise_num_for_str(0),
+            self.normalise_num_for_str(self.eng.delta_consumers),
+            self.normalise_num_for_str(self.eng.delta_generators),
+            self.normalise_num_for_str(self.eng.delta_power_system),
+            self.normalise_num_for_str(0),
+            self.normalise_num_for_str(self.eng.delta_exchange),
+            self.normalise_num_for_str(self.delta_total)
+        ]
         text_about_sys_end = '____________________________\n\n\n'
         text_about_sys_end += "Игра окончена" if act_tick == end_tick - 1 else ""
 
@@ -173,7 +162,7 @@ class Graph:
         for delta_text in text_about_sys_delta[::-1]:
             self.ax[1].text(51.5, y_delta, delta_text, fontsize=12, color='grey')
             if delta_text == text_about_sys_delta[-1]:
-                y_delta += 7.5
+                y_delta += 18
             y_delta += 17.8
         self.ax[1].text(40, -90, text_about_sys_end, fontsize=20, ha='center', fontweight='bold')
 

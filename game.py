@@ -6,13 +6,8 @@ from player_code import player_actions
 
 class Game:
     def __init__(self, fig, ax):
-        self.consumers = self.read_file("consumer.json")
-        self.generators = self.read_file("generators.json")
-        self.eng = Engine(
-            self.generators["solar"]["count"],
-            self.generators["wind"]["count"],
-            self.consumers
-        )
+        self.eng = Engine()
+        self.trade_players = 0
         self.all_spent_money = 0
         self.all_received_money = 0
         self.balance_money = 0
@@ -40,29 +35,17 @@ class Game:
         self.reset_vars()
         self.eng.act_tick = i
         # Погода
-        # Авария
-        flag_crash = self.eng.get_crash()
 
         # Данные по энергии
-        received_energy = self.eng.get_received_energy()  # получено
-        spent_energy = self.eng.get_spent_energy()  # потрачено
-        balance_energy = received_energy - spent_energy  # баланс
+        received_energy = self.eng.received_energy  # получено
+        spent_energy = self.eng.spent_energy  # потрачено
+        self.eng.balance_energy = received_energy - spent_energy  # баланс
 
         # Оплата за генераторы
-        self.all_spent_money = self.eng.get_money_generators(self.generators)
-        '''
-        # Биржа энергии между игроками
-        energy_player, money_player = 0, 0
-        if trade_players != 0 and False:  # не реализовано!!!!!!!!!!!!!
-            energy_player, money_player = get_bidding_players()
-            balance_energy += energy_player
-            if money_player < 0:
-                all_spent_money -= money_player
-            else:
-                all_received_money += money_player
-        '''
+        self.all_spent_money = self.eng.money_generators
+
         # Прибыль
-        received_consumer = self.eng.get_received_consumer(self.generators)
+        received_consumer = self.eng.received_consumer
         self.all_received_money += received_consumer
 
         # Действия игрока (на следующий тик)
@@ -82,6 +65,5 @@ class Game:
         self.balance_money += self.all_received_money - self.all_spent_money
 
         self.graph.update_engine(self.fig, self.ax, self.eng)
-        self.graph.draw_first_graph(i, crash_tick=engine.crash_tick)
+        self.graph.draw_first_graph(i)
         self.graph.draw_second_graph(i, end_tick=engine.end_tick)
-

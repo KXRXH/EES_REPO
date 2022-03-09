@@ -1,5 +1,5 @@
 from engine import ips, Engine
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 charges_in_next2 = dict()
 Diesel = namedtuple("Diesel", ("power",))
@@ -10,7 +10,6 @@ def player_actions(eng: Engine, delta):
     return
     global charges_in_next2  # !!!!!!!!!!!!!!!!!!! закоментировать на стенде
 
-    from collections import defaultdict
     # import ips !!!!!!!!!!!!!!!
 
     psm = ips.init(eng, delta)

@@ -200,12 +200,11 @@ class Powerstand:
                                       make_forecasts(weather_data['houseA']),
                                       make_forecasts(weather_data['houseB']))
 
-        self.objs = eng.objs
         self.objects = [make_object(obj, self.__station_index, self.__storage_index)
-                        for obj in self.objs]
+                        for obj in self.eng.objs]
 
-        self.total_power = Total_Power(eng.get_received_energy(),
-                                       eng.get_spent_energy(),
+        self.total_power = Total_Power(eng.received_energy,
+                                       eng.spent_energy,
                                        0, 0)  # потери
 
         self.orders = Namespace(

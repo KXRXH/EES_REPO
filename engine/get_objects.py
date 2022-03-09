@@ -1,190 +1,139 @@
-# from engine.engine_const import *
+from engine.engine_const import *
+from .parser import parser
 
 
 class Objects:
-    def __init__(self):
+    def __init__(self, eng):
+        self.eng = eng
+
         self.real_weather = real_weather
-        # self.DATA = topology.json
-        # Это типо активный тик.
-        self.act_tick = 0
 
-        self.NAME_OBJECTS = ["main", "miniA", "miniB", "solar", "wind", "houseA", "houseB", "factory", "hospital",
-                             "storage"]
-        self.NAME2_OBJECTS = {
-            "main": 'substation',
-            "miniA": 'mini_substationA',
-            "miniB": 'mini_substationB',
-            "solar": 'solar',
-            "wind": 'wind',
-            "houseA": 'houseA',
-            "houseB": 'houseB',
-            "factory": 'factory',
-            "hospital": 'hospital',
-            "storage": 'storage'
-        }
+        self.count_type, self.objects = parser()
 
-        self.TYPE_CUSTOMERS = ["houseA", "houseB", "factory", "hospital"]
-        self.TYPE_STATION = ["main", "miniA", "miniB"]
+        self.objs = dict()
+        for address in list(self.objects):
+            self.objs[address] = dict()
 
-        self.HALLWAY = 0.5
+            self.objs[address]['id'] = self.objects[address]['id']
+            self.objs[address]['type'] = self.objects[address]['type']
+            self.objs[address]['line'] = self.objects[address]['line']
+            self.objs[address]['path'] = self.objects[address]['path']
+            self.objs[address]['contract'] = self.objects[address]['contract']
 
-        '''
-        для определения нужно count, prefix, contract, path
-        '''
+            self.objs[address]['charge'] = 0
+            self.objs[address]['delta'] = 0
+            self.objs[address]['online'] = True
+            self.objs[address]['failed'] = False
 
+            if self.objects[address]['type'] == 'solar':
+                self.objs[address]['koaf_gen'] = 0.7 + random.uniform(-0.1, 0.1)
+            elif self.objects[address]['type'] == 'wind':
+                self.objs[address]['koaf_gen'] = 0.011 + random.uniform(-0.004, 0.004)
+            else:
+                self.objs[address]['koaf_gen'] = 1
 
-        # self.count = dict()
-        # self.prefix = dict()
-        # self.contract = dict()
-        # self.path = dict()
-        # for name in self.NAME_OBJECTS:
-        #     self.count[self.NAME2_OBJECTS[name]] = count
-        #     self.prefix[self.NAME2_OBJECTS[name]] = prefix
-        #     self.contract[self.NAME2_OBJECTS[name]] = contract
-        #     self.path[self.NAME2_OBJECTS[name]] = contract
+            self.objs[address]['score_then'] = []
+            self.objs[address]['power_then'] = []
+            self.objs[address]['charge_then'] = []
 
-        # self.koaf_solar_gen = [0.7 + random.uniform(-0.1, 0.1) for _ in range(0, count_solar)]
-        # self.koaf_wind_gen = [0.011 + random.uniform(-0.004, 0.004) for _ in range(0, count_wind)]
-        # self.online_wind = [True for _ in range(0, count_solar)]
-        # self.online_solar = [True for _ in range(0, count_wind)]
-        # self.delta_storage = [0 for _ in range(0, count_storage)]
-
-
-        self.history = dict()
-
-        for name in self.NAME_OBJECTS:
-            self.history[name] = dict()
-            self.history[name][self.make_name(name, 'score_then')] = []
-            self.history[name][self.make_name(name, 'power_then')] = []
-            self.history[name][self.make_name(name, 'charge_then')] = []
-            for itr in range(0, self._qty(name)):
-                self.history[name][self.make_name(name, 'score_then')].append([])
-                self.history[name][self.make_name(name, 'power_then')].append([])
-                self.history[name][self.make_name(name, 'charge_then')].append([])
-
-    def make_name(self, obj, name):
-        return f'{name}_{obj}'
 
     def get_by_type(self, object_type: str):
-        """
-        Заменяет get_houseB и прочие гэтеры
-        """
-        return max(0, self.real_weather[object_type][self.act_tick] + random.uniform(-self.HALLWAY, self.HALLWAY))
+        return max(0, self.real_weather[object_type][self.eng.act_tick] + random.uniform(-HALLWAY, HALLWAY))
 
 
-    def _qty(self, obj):
-        return eval(f'qty_{self.NAME2_OBJECTS[obj]}') # count
-
-    def _address(self, obj):
-        return eval(f'prefix_address_{self.NAME2_OBJECTS[obj]}') + hex(self.address_itr)[2:] # prefix
-
-    def _contract(self, obj, itr):
-        return eval(f'contract_{self.NAME2_OBJECTS[obj]}[{itr}]') # contract
-
-    def _score_now_income(self, obj, contract):
-        if obj in self.TYPE_CUSTOMERS:
-            return contract * self.get_by_type('obj')
+    def _score_now_income(self, address, contract):
+        type = self.objs[address]['type']
+        if type in TYPE_CUSTOMERS:
+            return contract * self.get_by_type(type)
         return 0
 
-    def _score_now_loss(self, obj, contract):
-        if obj not in self.TYPE_CUSTOMERS:
+    def _score_now_loss(self, address, contract):
+        type = self.objs[address]['type']
+        if type not in TYPE_CUSTOMERS:
             return contract
         return 0
 
-    def _power_now_generated(self, obj, itr, online):
-        if obj == 'solar' and online:
-            return min(self.get_by_type('solar') * koaf_solar_gen[itr], max_power_solar)
-        if obj == 'wind' and online:
-            return min(self.get_by_type('wind') ** 3 * koaf_wind_gen[itr], max_power_wind)
-        if obj == 'storage' and online:
-            if delta_storage[itr] < 0:
-                return abs(delta_storage[itr])
+    def _power_now_generated(self, address, online, failed):
+        type = self.objs[address]['type']
+        if type == 'solar' and online and not failed:
+            return min(self.get_by_type(type) * self.objs[address]['koaf_gen'], MAX_SOLAR)
+        if type == 'wind' and online and not failed:
+            return min(self.get_by_type(type) ** 3 * self.objs[address]['koaf_gen'], MAX_WIND)
+        if type == 'storage' and online and not failed:
+            if self.objs[address]['delta'] < 0:
+                return abs(self.objs[address]['delta'])
         return 0
 
-    def _power_now_consumed(self, obj, itr, online):
-        if obj == 'storage' and online:
-            if delta_storage[itr] > 0:
-                return abs(delta_storage[itr])
-        if obj in self.TYPE_CUSTOMERS and online:
-            return self.get_by_type('obj')
+    def _power_now_consumed(self, address, online, failed):
+        type = self.objs[address]['type']
+        if type == 'storage' and online and not failed:
+            if self.objs[address]['delta'] > 0:
+                return abs(self.objs[address]['delta'])
+        if type in TYPE_CUSTOMERS and online and not failed:
+            if type in TYPE_WITH_2_INPUT:
+                index = NUM_OBJ.index(address)
+                if index % 2 == 0 and address[0] + NUM_OBJ[index-1] in list(self.objs):
+                    return self.get_by_type(type) / 2
+                elif index % 2 != 0 and address[0] + NUM_OBJ[index+1] in list(self.objs):
+                    return self.get_by_type(type) / 2
+            return self.get_by_type(type)
         return 0
 
-    def _charge(self, obj, itr):
-        if obj == 'storage':
-            return charge_storage[itr]
-        return 0
+    def _online(self, address):
+        if self.objs[address]['type'] == 'wind':
+            if self.get_by_type('wind') ** 3 * self.objs[address]['koaf_gen'] > MAX_POWER_WIND * 100 / MAX_POWER_PERCENT:
+                self.objs[address]['online'] = False
+            if self.get_by_type('wind') ** 3 * self.objs[address]['koaf_gen'] < MAX_POWER_WIND * MINIMUM_RESUME_PERCENT / MAX_POWER_PERCENT:
+                self.objs[address]['online'] = True
+        return self.objs[address]['online']  # онлайн
 
-    def _online(self, obj, itr):
-        if obj == 'wind':
-            if self.get_by_type('wind') ** 3 * koaf_wind_gen[itr] > MAX_POWER_WIND * 100 / MAX_POWER_PERCENT:
-                online_wind[itr] = False
-            if self.get_by_type('wind') ** 3 * koaf_wind_gen[itr] < MAX_POWER_WIND * MINIMUM_RESUME_PERCENT / MAX_POWER_PERCENT:
-                online_wind[itr] = True
-        return eval(f'online_{self.NAME2_OBJECTS[obj]}[{itr}]') # онлайн
-
-    def _path(self, obj, itr):
-        path = []
-        line_connected = eval(self.make_name(self.NAME2_OBJECTS[obj], 'line') + f'[{itr}]') # линия подключения
-        path_connected = eval(self.make_name(self.NAME2_OBJECTS[obj], 'path') + f'[{itr}]') # путь подключения
-
-        for itr_line in range(0, len(line_connected)):
-            path.append([{"line": line_connected[itr_line], "id": path_connected[itr_line]}])
-
-        return path
+    def _path(self, address):
+        if self.objs[address]['type'] == 'main':
+            return [[]]
+        return [{"line": self.objs[address]['line'], "id": [self.objs[address]['path'], self.objs[address]['id']]}]
 
     def get_objects(self):
         self.data_obj = []
-        self.id_itr = 0
 
-        for name in self.NAME_OBJECTS:
-            self.add_obj(name)
+        for address in list(self.objs):
+            self.add_obj(address)
 
         return self.data_obj
 
-    def add_obj(self, obj: str):
-        self.address_itr = 0
+    def add_obj(self, address: str):
+        contract = self.objs[address]['contract']
+        online = self._online(address)
+        failed = self.objs[address]['failed']
+        path = self._path(address)
 
-        for itr in range(0, self._qty(obj)):
-            self.id_itr += 1
-            self.address_itr += 1
+        score_now_income = self._score_now_income(address, contract)
+        score_now_loss = self._score_now_loss(address, contract)
 
-            address = self._address(obj)
-            contract = self._contract(obj, itr)
-            online = self._online(obj, itr)
-            path = self._path(obj, itr)
+        power_now_generated = self._power_now_generated(address, online, failed)
+        power_now_consumed = self._power_now_consumed(address, online, failed)
 
-            score_now_income = self._score_now_income(obj, contract)
-            score_now_loss = self._score_now_loss(obj, contract)
+        charge = self.objs[address]['charge']
 
-            power_now_generated = self._power_now_generated(obj, itr, online)
-            power_now_consumed = self._power_now_consumed(obj, itr, online)
+        modules = []
 
-            charge = self._charge(obj, itr)
+        self.data_obj.append(
+            {
+                "id": [self.objs[address]['type'], self.objs[address]['id']],
+                "address": address,
+                "contract": contract,
+                "path": path,
+                "score": {"now": {"loss": score_now_loss, "income": score_now_income},
+                          "then": self.objs[address]['score_then'].copy()},
+                "power": {
+                    "now": {"online": online, "consumed": power_now_consumed, "generated": power_now_generated},
+                    "then": self.objs[address]['power_then'].copy()},
+                "charge": {"now": charge,
+                           "then": self.objs[address]['charge_then'].copy()},
+                "modules": modules,
+                "class": self.objs[address]['type']
+            }
+        )
 
-            modules = []
-
-            self.data_obj.append(
-                {
-                    "id": [obj, self.id_itr],
-                    "address": address,
-                    "contract": contract,
-                    "path": path,
-                    "score": {"now": {"loss": score_now_loss, "income": score_now_income},
-                              "then": self.history[obj][self.make_name(obj, 'score_then')][itr].copy()},
-                    "power": {
-                        "now": {"online": online, "consumed": power_now_consumed, "generated": power_now_generated},
-                        "then": self.history[obj][self.make_name(obj, 'power_then')][itr].copy()},
-                    "charge": {"now": charge,
-                               "then": self.history[obj][self.make_name(obj, 'charge_then')][itr].copy()},
-                    "modules": modules,
-                    "class": obj
-                }
-            )
-
-            self.history[obj][self.make_name(obj, 'score_then')][itr].append(
-                {"loss": score_now_loss, "income": score_now_income}
-            )
-            self.history[obj][self.make_name(obj, 'power_then')][itr].append(
-                {"online": online, "consumed": power_now_consumed, "generated": power_now_generated}
-            )
-            self.history[obj][self.make_name(obj, 'charge_then')][itr].append(charge)
+        self.objs[address]['score_then'].append({"loss": score_now_loss, "income": score_now_income})
+        self.objs[address]['power_then'].append({"online": online, "consumed": power_now_consumed, "generated": power_now_generated})
+        self.objs[address]['charge_then'].append(charge)
