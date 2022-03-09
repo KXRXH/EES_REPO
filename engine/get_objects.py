@@ -26,9 +26,9 @@ class Objects:
             self.objs[address]['failed'] = False
 
             if self.objects[address]['type'] == 'solar':
-                self.objs[address]['koaf_gen'] = 0.7 + random.uniform(-0.1, 0.1)
+                self.objs[address]['koaf_gen'] = 0.45 + random.uniform(-0.05, 0.05)
             elif self.objects[address]['type'] == 'wind':
-                self.objs[address]['koaf_gen'] = 0.011 + random.uniform(-0.004, 0.004)
+                self.objs[address]['koaf_gen'] = 0.01 + random.uniform(-0.004, 0.004)
             else:
                 self.objs[address]['koaf_gen'] = 1
 
@@ -71,7 +71,7 @@ class Objects:
                 return abs(self.objs[address]['delta'])
         if type in TYPE_CUSTOMERS and online and not failed:
             if type in TYPE_WITH_2_INPUT:
-                index = NUM_OBJ.index(address)
+                index = NUM_OBJ.index(address[1])
                 if index % 2 == 0 and address[0] + NUM_OBJ[index-1] in list(self.objs):
                     return self.get_by_type(type) / 2
                 elif index % 2 != 0 and address[0] + NUM_OBJ[index+1] in list(self.objs):

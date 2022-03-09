@@ -34,6 +34,7 @@ class Game:
     def one_tick(self, i):
         self.reset_vars()
         self.eng.act_tick = i
+        self.eng._update()
         # Погода
 
         # Данные по энергии
