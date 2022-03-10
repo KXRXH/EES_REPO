@@ -1,26 +1,38 @@
 [
   {
-    "address": "b1",
+    "address": "h1",
     "line": 3,
     "station": "M2",
     "comment": 10
   },
   {
-    "address": "s1",
+    "address": "f1",
     "line": 3,
     "station": "M2",
-    "comment": 10
+    "comment": 7
   },
   {
-    "address": "c1",
+    "address": "a2",
     "line": 3,
     "station": "M2",
-    "comment": 10
+    "comment": 3
+  },
+  {
+    "address": "a1",
+    "line": 3,
+    "station": "M2",
+    "comment": 6
   },
   {
     "address": "t1",
     "line": 3,
     "station": "M2",
-    "comment": 10
+    "comment": 4.8
+  },
+  {
+    "address": "e2",
+    "line": 3,
+    "station": "M2",
+    "comment": 4
   }
 ]

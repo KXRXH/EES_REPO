@@ -4,7 +4,7 @@ random.seed(1337)
 COUNT_WEATHER_VALUES = 8
 WEATHER_OBJECTS = ['solar', 'wind', 'hospital', 'factory', 'houseA', 'houseB']
 WEATHER_WAY = [random.randint(1, COUNT_WEATHER_VALUES) for i in WEATHER_OBJECTS]
-FILE = './forecasts-mar-09-3.csv'
+FILE = './forecast_335.csv'
 SEED = 1337
 random.seed(SEED)
 RUBLE = '\u20BD'

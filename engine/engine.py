@@ -73,8 +73,6 @@ class Engine:
             self.graph_history[name].append(0)
 
         self.calc_money_and_energy()
-        self.get_bidding_players()
-
 
         self.consumers += self.delta_consumers
         self.generators += self.delta_generators
@@ -116,12 +114,13 @@ class Engine:
     def get_bidding_players(self):
         for order, value in self.orders:
             if order == 'sell':
+                self.balance_energy -= value
                 cost_power_instant = value * (spent_power_instant * 2)
-                print(cost_power_instant)
                 self.graph_history['exchange_players_p'][-1] += 0
                 self.graph_history['exchange_players_n'][-1] += value
                 self.delta_exchange += cost_power_instant
             else:
+                self.balance_energy += value
                 cost_power_instant = value * (received_power_instant / 2)
                 self.graph_history['exchange_players_p'][-1] += value
                 self.graph_history['exchange_players_n'][-1] += 0
@@ -129,8 +128,9 @@ class Engine:
 
     # если энергии все еще не хватает, то покупаем из внешней сети
     def get_money_remains(self):
-        _balance_energy = self.balance_energy
+        self.get_bidding_players()
 
+        _balance_energy = self.balance_energy
         if _balance_energy < 0:
             cost_power_instant = abs(_balance_energy) * received_power_instant
             self.graph_history['exchange_p'][-1] += abs(_balance_energy)
