@@ -38,9 +38,19 @@ class Engine:
         self.delta_overload = 0
         self.delta_exchange = 0
 
+        self.orders_time_1 = []
+        self.orders_time_2 = []
+        self.orders = []
+
+        self._objects = Objects(self)
+
 
     def _update(self):
-        self.objs = Objects(self).get_objects()
+        self.objs = self._objects.get_objects()
+
+        self.orders_time_2 = self.orders_time_1.copy()
+        self.orders = self.orders_time_2.copy()
+        self.orders_time_1 = []
 
         self.delta_auction = 0
         self.delta_consumers = 0
@@ -63,7 +73,7 @@ class Engine:
             self.graph_history[name].append(0)
 
         self.calc_money_and_energy()
-
+        self.get_bidding_players()
 
 
         self.consumers += self.delta_consumers
@@ -85,38 +95,37 @@ class Engine:
 
             type = obj['class']
             if type in TYPE_STATION:
-                if len(obj['score']['then']) == 0:
-                    self.delta_power_system -= obj['score']['now']['loss']
-                else:
-                    self.delta_power_system -= obj['score']['now']['loss'] - obj['score']['then'][-1]['loss']
+                self.delta_power_system -= obj['score']['now']['loss']
                 continue
             if type == 'storage':
-                if len(obj['score']['then']) == 0:
-                    self.delta_power_system -= obj['score']['now']['loss']
-                else:
-                    self.delta_power_system -= obj['score']['now']['loss'] - obj['score']['then'][-1]['loss']
+                self.delta_power_system -= obj['score']['now']['loss']
 
                 self.graph_history[f'{type}_p'][-1] += obj['power']['now']['generated']
                 self.graph_history[f'{type}_n'][-1] += obj['power']['now']['consumed']
                 continue
             elif type in TYPE_CUSTOMERS:
-                if len(obj['score']['then']) == 0:
-                    self.delta_consumers += obj['score']['now']['income']
-                else:
-                    self.delta_consumers += obj['score']['now']['income'] - obj['score']['then'][-1]['income']
+                self.delta_consumers += obj['score']['now']['income']
 
                 self.graph_history[type][-1] += obj['power']['now']['consumed']
             else:
-                if len(obj['score']['then']) == 0:
-                    self.delta_generators -= obj['score']['now']['loss']
-                else:
-                    self.delta_generators -= obj['score']['now']['loss'] - obj['score']['then'][-1]['loss']
+                self.delta_generators -= obj['score']['now']['loss']
 
                 self.graph_history[type][-1] += obj['power']['now']['generated']
 
     # Биржа энергии между игроками
     def get_bidding_players(self):
-        return None, None
+        for order, value in self.orders:
+            if order == 'sell':
+                cost_power_instant = value * (spent_power_instant * 2)
+                print(cost_power_instant)
+                self.graph_history['exchange_players_p'][-1] += 0
+                self.graph_history['exchange_players_n'][-1] += value
+                self.delta_exchange += cost_power_instant
+            else:
+                cost_power_instant = value * (received_power_instant / 2)
+                self.graph_history['exchange_players_p'][-1] += value
+                self.graph_history['exchange_players_n'][-1] += 0
+                self.delta_exchange -= cost_power_instant
 
     # если энергии все еще не хватает, то покупаем из внешней сети
     def get_money_remains(self):
@@ -136,3 +145,7 @@ class Engine:
         self.exchange += self.delta_exchange
 
         return cost_power_instant
+
+
+    def _set_order(self, type, value):
+        self.orders_time_1.append([type, value])

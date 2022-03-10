@@ -1,36 +1,24 @@
 [
   {
-    "address": "e2",
-    "line": 1,
-    "station": "M2",
-    "comment": 4
-  },
-  {
-    "address": "sG",
-    "line": 1,
-    "station": "e2",
-    "comment": 10
-  },
-  {
-    "address": "sP",
-    "line": 2,
-    "station": "e2",
-    "comment": 10
-  },
-  {
-    "address": "sH",
+    "address": "b1",
     "line": 3,
-    "station": "e2",
-    "comment": 10
-  },
-  {
-    "address": "c2",
-    "line": 2,
     "station": "M2",
     "comment": 10
   },
   {
-    "address": "h2",
+    "address": "s1",
+    "line": 3,
+    "station": "M2",
+    "comment": 10
+  },
+  {
+    "address": "c1",
+    "line": 3,
+    "station": "M2",
+    "comment": 10
+  },
+  {
+    "address": "t1",
     "line": 3,
     "station": "M2",
     "comment": 10

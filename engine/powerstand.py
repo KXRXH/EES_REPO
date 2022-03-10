@@ -1,7 +1,12 @@
 # self.eng.act_tick = 26
+import sys
+import traceback
+
 from engine.engine import *
 from collections import namedtuple
 from argparse import Namespace
+
+from engine.engine_const import *
 
 
 __all__ = [
@@ -124,15 +129,7 @@ def make_historic_(d, fn):
     return Historic(fn(d["now"]), [fn(x) for x in d["then"][::-1]])
 
 
-def get_fails():
-    fails = []
-    for start_crash, end_crash in crash_tick + [[end_tick, end_tick]]:
-        fails += [False] * (start_crash - len(fails))
-        fails += [True] * (end_crash - start_crash)
-    return fails
-
-
-def make_object(d, stations, storages):
+def make_object(d, stations, storages, thermos):
     obj = Object(
         id=d["id"],
         address=tuple(d["address"]),
@@ -145,9 +142,11 @@ def make_object(d, stations, storages):
         type=d["class"]
     )
     if obj.type in station_types:
-        stations[obj.address] = obj.id
+        stations[obj.address[0]] = obj.id
     if obj.type in storage_types:
-        storages[obj.address] = obj.id
+        storages[obj.address[0]] = obj.id
+    if obj.type == "TPS":
+        thermos[obj.address[0]] = obj.id
     return obj
 
 
@@ -179,19 +178,16 @@ class Powerstand:
         self.__orders = orders = []
         self.__station_index = dict()
         self.__storage_index = dict()
+        self.__tps_index = dict()
         self.__user_data = [[] for _ in range(self.GRAPH_COUNT)]
 
+        self.tick = self.eng.act_tick
         self.gameLength = end_tick - start_tick
         self.scoreDelta = score_delta
 
-        self.fails = get_fails()
 
-        self.sun = Historic(real_weather['solar'][self.eng.act_tick], real_weather['solar'][0:self.eng.act_tick])
-        self.wind = Historic(real_weather['wind'][self.eng.act_tick], real_weather['wind'][0:self.eng.act_tick])
-        self.hospital = Historic(real_weather['hospital'][self.eng.act_tick], real_weather['hospital'][0:self.eng.act_tick])
-        self.factory = Historic(real_weather['factory'][self.eng.act_tick], real_weather['factory'][0:self.eng.act_tick])
-        self.houseA = Historic(real_weather['houseA'][self.eng.act_tick], real_weather['houseA'][0:self.eng.act_tick])
-        self.houseB = Historic(real_weather['houseB'][self.eng.act_tick], real_weather['houseB'][0:self.eng.act_tick])
+        self.sun = Historic(real_weather['solar'][self.tick], real_weather['solar'][0:self.tick])
+        self.wind = Historic(real_weather['wind'][self.tick], real_weather['wind'][0:self.tick])
 
         self.forecasts = Data_Weather(make_forecasts(weather_data['solar']),
                                       make_forecasts(weather_data['wind']),
@@ -200,15 +196,17 @@ class Powerstand:
                                       make_forecasts(weather_data['houseA']),
                                       make_forecasts(weather_data['houseB']))
 
-        self.objects = [make_object(obj, self.__station_index, self.__storage_index)
+
+        self.objects = [make_object(obj, self.__station_index, self.__storage_index, self.__tps_index)
                         for obj in self.eng.objs]
 
         self.total_power = Total_Power(eng.received_energy,
                                        eng.spent_energy,
-                                       0, 0)  # потери
+                                       0,
+                                       0)  # потери
 
         self.orders = Namespace(
-            diesel=lambda address, power: self.__set_diesel(address, power),
+            tps=lambda address, power: self.__set_tps(address, power),
             charge=lambda address, power: self.__change_cell(address, power, True),
             discharge=lambda address, power: self.__change_cell(address, power, False),
             sell=lambda amount, price: self.__outstanding(amount, price, True),
@@ -224,60 +222,87 @@ class Powerstand:
     def __check_address(self, address):
         return tuple(address) in self.__station_index
 
-    def __set_diesel(self, address, power):
+    def __set_tps(self, address, power):
         try:
             power = float(power)
             if power < 0:
-                raise ("Отрицательное значение энергии на дизеле. Приказ не принят.")
+                self.__warn_tb("Отрицательное значение энергии на ТЭС. "
+                               "Приказ не принят.", cut=3)
+                return
         except ValueError:
-            raise ("Для приказа на дизель нужен float-совместимый тип. Приказ не принят.")
-        if not self.__check_address(address):
-            raise ("Такой подстанции не существует. Приказ не принят.")
+            self.__warn_tb("Для приказа на ТЭС нужен float-совместимый "
+                           "тип. Приказ не принят.", cut=3)
+            return
+        if address not in self.__tps_index:
+            self.__warn_tb("Такой ТЭС не существует. "
+                           "Приказ не принят.", cut=3)
+            return
 
-        global power_diesel
-        local_power = power
-        for itr, connect in enumerate(connected_diesel):
-            if address == tuple(connect):
-                power_diesel[itr] = min(local_power, max_power_diesel)
-                local_power -= power_diesel[itr]
-        self.__orders.append({"orderT": "diesel", "address": ''.join(address), "power": power - local_power})
+        self.eng._objects._set_fuel(address, power)
+
+        self.__orders.append({"orderT": "TPS", "address": address, "power": power})
 
     def __change_cell(self, address, power, charge=True):
         try:
             power = float(power)
             if power < 0:
-                raise ("Отрицательное значение энергии в приказе на аккумулятор. Приказ не принят.")
+                self.__warn_tb("Отрицательное значение энергии в приказе на аккумулятор. "
+                               "Приказ не принят.", cut=3)
+                return
         except ValueError:
-            raise ("Для приказа на аккумулятор нужен float-совместимый тип. Приказ не принят.")
-        if tuple(address) not in list(self.__storage_index):
-            raise ("Такого накопителя/подстанции не существует. Приказ не принят.")
+            self.__warn_tb("Для приказа на аккумулятор нужен float-совместимый "
+                           "тип. Приказ не принят.", cut=3)
+            return
+        if address not in self.__storage_index:
+            self.__warn_tb("Такого накопителя/подстанции не существует. "
+                           "Приказ не принят.", cut=3)
+            return
 
         order = "charge" if charge else "discharge"
-        '''
-        global charge_accamulator
-        global delta_storage
-        global charge_storage
-        '''
-        local_power = power
-        if prefix_address_storage in address:
-            pass
+
+        if charge:
+            sent_power = min(power, 15, 100 - self.eng._objects.objs[address]['charge'])
         else:
-            for itr, connect in enumerate(connected_accamulator):
-                if address == tuple(connect):
-                    if charge:
-                        delta_accamulator[itr] = min(local_power, max_power_accamulator - charge_accamulator[itr],
-                                                     max_exchange_power_accamulator)
-                        charge_accamulator[itr] += delta_accamulator[itr]
-                        local_power -= delta_accamulator[itr]
-                    else:
-                        delta_accamulator[itr] = -1 * min(local_power, charge_accamulator[itr],
-                                                          max_exchange_power_accamulator)
-                        charge_accamulator[itr] += delta_accamulator[itr]
-                        local_power -= -delta_accamulator[itr]
-        self.__orders.append({"orderT": order, "address": ''.join(address), "power": power - local_power})
+            sent_power = -min(power, 15, self.eng._objects.objs[address]['charge'])
+
+        self.eng._objects._set_charge(address, sent_power)
+        self.eng.exchange += (power - sent_power) * spent_power_instant
+
+        self.__orders.append({"orderT": order, "address": ''.join(address), "power": sent_power})
 
     def __outstanding(self, amount, price, sell=True):
-        pass
+        try:
+            amount = float(amount)
+            if amount < 0:
+                self.__warn_tb("Неположительное значение энергии в заявке на биржу. "
+                               "Приказ не принят.", cut=3)
+                return
+        except ValueError:
+            self.__warn_tb("Для заявки на биржу нужно float-совместимое "
+                           "значение энергии. Приказ не принят.", cut=3)
+            return
+        try:
+            price = float(price)
+            if price < 0:
+                self.__warn_tb("Неположительное значение стоимости в заявке на биржу. "
+                               "Приказ не принят.", cut=3)
+                return
+        except ValueError:
+            self.__warn_tb("Для заявки на биржу нужно float-совместимое "
+                           "значение стоимости. Приказ не принят.", cut=3)
+            return
+        order = "sell" if sell else "buy"
+
+        if sell:
+            sent_power = min(amount, 50)
+        else:
+            sent_power = min(amount, 50)
+
+        self.eng._set_order(order, sent_power)
+        self.eng.exchange += (amount - sent_power) * spent_power_instant
+
+        self.__orders.append({"orderT": order, "amount": amount, "price": price})
+
 
     def __set_line(self, address, line, value=True):
         pass
@@ -295,6 +320,12 @@ class Powerstand:
         return data_actions
 
     @staticmethod
+    def __warn_tb(error, warning=False, cut=2):
+        level = "Предупреждение" if warning else "Ошибка"
+        print("".join(traceback.format_list(traceback.extract_stack()[:-cut])) +
+              f"{level}: {error}", file=sys.stderr, flush=True)
+
+    @staticmethod
     def humanize_order(order):
         type = order["orderT"]
         if type == "lineOn":
@@ -307,6 +338,8 @@ class Powerstand:
             return f"заявка на продажу {order['amount']:.2f} МВт⋅ч за {order['price']:.2f} ₽"
         if type == "buy":
             return f"заявка на покупку {order['amount']:.2f} МВт⋅ч за {order['price']:.2f} ₽"
+        if type == "TPS":
+            return f"установка мощности ТЭС {order['address']} в {order['power']:.2f} МВт"
         if type == "diesel":
             return f"установка мощности дизелей {order['address']} в {order['power']:.2f} МВт"
         if type == "charge":

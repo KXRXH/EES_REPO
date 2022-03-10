@@ -46,12 +46,13 @@ class Graph:
     def max_value_data_graph(self) -> int:
 
         positive_value = self.eng.graph_history['solar'][-1] + self.eng.graph_history['wind'][-1] + \
-                         self.eng.graph_history['storage_p'][-1] + self.eng.graph_history['exchange_p'][-1]
+                         self.eng.graph_history['storage_p'][-1] + self.eng.graph_history['exchange_p'][-1] + \
+                         self.eng.graph_history['exchange_players_p'][-1]
 
         negative_value = self.eng.graph_history["hospital"][-1] + self.eng.graph_history["factory"][-1] + \
                          self.eng.graph_history["houseA"][-1] \
                          + self.eng.graph_history["houseB"][-1] + self.eng.graph_history['storage_n'][-1] \
-                         + self.eng.graph_history['exchange_n'][-1]
+                         + self.eng.graph_history['exchange_n'][-1] + self.eng.graph_history['exchange_players_n'][-1]
 
         if positive_value > self.max_energy_data:
             self.max_energy_data = positive_value
@@ -80,8 +81,12 @@ class Graph:
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_solar, main_axis_y[:act_tick + 2], facecolor='#FFEC14')
         y_wind = self.normalise_y_data(self.eng.graph_history['wind'], y_solar)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_wind, y_solar, facecolor='#A3FFFF')
-        y_storage_p = self.normalise_y_data(self.eng.graph_history['storage_p'], y_wind)
-        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_storage_p, y_wind, facecolor='#3737FF')
+        y_tps = self.normalise_y_data(self.eng.graph_history['TPS'], y_wind)
+        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_tps, y_wind, facecolor='#9C9C9C')
+        y_exchange_players_p = self.normalise_y_data(self.eng.graph_history['exchange_players_p'], y_tps)
+        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_players_p, y_tps, facecolor='#9400D3')
+        y_storage_p = self.normalise_y_data(self.eng.graph_history['storage_p'], y_exchange_players_p)
+        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_storage_p, y_exchange_players_p, facecolor='#3737FF')
         y_exchange_p = self.normalise_y_data(self.eng.graph_history['exchange_p'], y_storage_p)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_p, y_storage_p, facecolor='#000000')
 
@@ -95,8 +100,10 @@ class Graph:
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_houseB, y_houseA, facecolor='#BFE471')
         y_storage_n = self.normalise_y_data(self.eng.graph_history['storage_n'], y_houseB, k=-1)
         self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_storage_n, y_houseB, facecolor='#3737FF')
-        y_exchange_n = self.normalise_y_data(self.eng.graph_history['exchange_n'], y_storage_n, k=-1)
-        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_n, y_storage_n, facecolor='#000000')
+        y_exchange_players_n = self.normalise_y_data(self.eng.graph_history['exchange_players_n'], y_storage_n, k=-1)
+        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_players_n, y_storage_n, facecolor='#9400D3')
+        y_exchange_n = self.normalise_y_data(self.eng.graph_history['exchange_n'], y_exchange_players_n, k=-1)
+        self.ax[0].fill_between(main_axis_x[:act_tick + 2], y_exchange_n, y_exchange_players_n, facecolor='#000000')
 
         # Донастройка 1 графика
         y_lim_max = max(abs(self.ax[0].get_ylim()[0]), abs(self.ax[0].get_ylim()[1]))
@@ -124,12 +131,13 @@ class Graph:
         # Рисование 2 графика
         self.ax[1].fill_between([0], [0], [0], facecolor='#FFEC14', label='Генерация от солнца')
         self.ax[1].fill_between([0], [0], [0], facecolor='#A3FFFF', label='Генерация от ветра')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#9C9C9C', label='Генерация от дизеля')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#9C9C9C', label='Генерация от ТЭС')
         self.ax[1].fill_between([0], [0], [0], facecolor='#FF9494', label='Потребление больницами')
         self.ax[1].fill_between([0], [0], [0], facecolor='#FFFDBB', label='Потребление заводами')
         self.ax[1].fill_between([0], [0], [0], facecolor='#9DC941', label='Потребление домами А')
         self.ax[1].fill_between([0], [0], [0], facecolor='#BFE471', label='Потребление домами Б')
         self.ax[1].fill_between([0], [0], [0], facecolor='#3737FF', label='Операции с аккамуляторами')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#9400D3', label='Операции с игроками')
         self.ax[1].fill_between([0], [0], [0], facecolor='#000000', label='Операции с внешней сетью')
         self.ax[1].legend(loc='upper left', prop={'size': 13.5})
 

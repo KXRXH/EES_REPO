@@ -10,6 +10,8 @@ class Objects:
 
         self.count_type, self.objects = parser()
 
+        self.k = lambda x: min(-0.007 * x**2 + 0.1185 * x + 0.4, 0.9)
+
         self.objs = dict()
         for address in list(self.objects):
             self.objs[address] = dict()
@@ -32,6 +34,10 @@ class Objects:
             else:
                 self.objs[address]['koaf_gen'] = 1
 
+            if self.objects[address]['type'] == 'TPS':
+                self.objs[address]['prew_gen'] = 0
+                self.objs[address]['fuel'] = 0
+
             self.objs[address]['score_then'] = []
             self.objs[address]['power_then'] = []
             self.objs[address]['charge_then'] = []
@@ -49,6 +55,8 @@ class Objects:
 
     def _score_now_loss(self, address, contract):
         type = self.objs[address]['type']
+        if type == 'TPS':
+            return contract + 3.5 * self.objs[address]['fuel']
         if type not in TYPE_CUSTOMERS:
             return contract
         return 0
@@ -61,21 +69,24 @@ class Objects:
             return min(self.get_by_type(type) ** 3 * self.objs[address]['koaf_gen'], MAX_WIND)
         if type == 'storage' and online and not failed:
             if self.objs[address]['delta'] < 0:
-                return abs(self.objs[address]['delta'])
+                delta = abs(self.objs[address]['delta'])
+                self.objs[address]['delta'] = 0
+                return delta
+        if type == 'TPS' and online and not failed:
+            fuel = self.objs[address]['fuel']
+            gen = fuel * self.k(fuel) + 0.6 * (self.objs[address]['prew_gen'] - 0.5)
+            self.objs[address]['prew_gen'] = gen
+            return gen
         return 0
 
     def _power_now_consumed(self, address, online, failed):
         type = self.objs[address]['type']
         if type == 'storage' and online and not failed:
             if self.objs[address]['delta'] > 0:
-                return abs(self.objs[address]['delta'])
+                delta = abs(self.objs[address]['delta'])
+                self.objs[address]['delta'] = 0
+                return delta
         if type in TYPE_CUSTOMERS and online and not failed:
-            if type in TYPE_WITH_2_INPUT:
-                index = NUM_OBJ.index(address[1])
-                if index % 2 == 0 and address[0] + NUM_OBJ[index-1] in list(self.objs):
-                    return self.get_by_type(type) / 2
-                elif index % 2 != 0 and address[0] + NUM_OBJ[index+1] in list(self.objs):
-                    return self.get_by_type(type) / 2
             return self.get_by_type(type)
         return 0
 
@@ -90,7 +101,15 @@ class Objects:
     def _path(self, address):
         if self.objs[address]['type'] == 'main':
             return [[]]
-        return [{"line": self.objs[address]['line'], "id": [self.objs[address]['path'], self.objs[address]['id']]}]
+        return [[{"line": self.objs[address]['line'], "id": [self.objs[address]['path'], self.objs[address]['id']]}]]
+
+    def _address(self, address):
+        if self.objs[address]['type'] in TYPE_WITH_2_INPUT:
+            index = NUM_OBJ.index(address[1])
+            if index % 2 == 0:
+                return None
+            return [address, address[0] + NUM_OBJ[index+1]]
+        return [address]
 
     def get_objects(self):
         self.data_obj = []
@@ -101,6 +120,10 @@ class Objects:
         return self.data_obj
 
     def add_obj(self, address: str):
+        addr = self._address(address)
+        if addr is None:
+            return
+
         contract = self.objs[address]['contract']
         online = self._online(address)
         failed = self.objs[address]['failed']
@@ -119,7 +142,7 @@ class Objects:
         self.data_obj.append(
             {
                 "id": [self.objs[address]['type'], self.objs[address]['id']],
-                "address": address,
+                "address": addr,
                 "contract": contract,
                 "path": path,
                 "score": {"now": {"loss": score_now_loss, "income": score_now_income},
@@ -137,3 +160,10 @@ class Objects:
         self.objs[address]['score_then'].append({"loss": score_now_loss, "income": score_now_income})
         self.objs[address]['power_then'].append({"online": online, "consumed": power_now_consumed, "generated": power_now_generated})
         self.objs[address]['charge_then'].append(charge)
+
+
+    def _set_charge(self, address, value):
+        self.objs[address]['delta'] = value
+
+    def _set_fuel(self, address, value):
+        self.objs[address]['fuel'] = value

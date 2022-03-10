@@ -4,7 +4,7 @@ random.seed(1337)
 COUNT_WEATHER_VALUES = 8
 WEATHER_OBJECTS = ['solar', 'wind', 'hospital', 'factory', 'houseA', 'houseB']
 WEATHER_WAY = [random.randint(1, COUNT_WEATHER_VALUES) for i in WEATHER_OBJECTS]
-FILE = './forecast.csv'
+FILE = './forecasts-mar-09-3.csv'
 SEED = 1337
 random.seed(SEED)
 RUBLE = '\u20BD'
@@ -19,7 +19,7 @@ COST_DIESEL = 1
 COST_MW_DIESEl = 4  # руб/МВт
 COUNT_SUBSTATIONS = 1
 
-NAME_OBJECTS = ["main", "miniA", "miniB", "solar", "wind", "houseA", "houseB", "factory", "hospital", "storage"]
+NAME_OBJECTS = ["main", "miniA", "miniB", "solar", "wind", "houseA", "houseB", "factory", "hospital", "storage", "TPS"]
 PREFIX_OBJECTS = {
     "main": 'M',
     "miniA": 'e',
@@ -30,13 +30,14 @@ PREFIX_OBJECTS = {
     "houseB": 'b', # !!!!!
     "factory": 'f',
     "hospital": 'i', # !!!!!!!
-    "storage": 'c'
+    "storage": 'c',
+    "TPS": 't'
 }
 PREFIX_FOR_OBJECTS = dict()
 for name in list(PREFIX_OBJECTS):
     PREFIX_FOR_OBJECTS[PREFIX_OBJECTS[name]] = name
 TYPE_CUSTOMERS = ["houseA", "houseB", "factory", "hospital"]
-TYPE_WITH_2_INPUT = ["factory", "hospital"]
+TYPE_WITH_2_INPUT = ["factory", "hospital", "TPS"]
 TYPE_STATION = ["main", "miniA", "miniB"]
 NUM_OBJ = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 HALLWAY = 0.5
