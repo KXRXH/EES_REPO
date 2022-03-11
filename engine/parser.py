@@ -5,7 +5,7 @@ def parser():
         DATA = eval(f.read())
         DATA.insert(0,
             {"address": "M2",
-             "line": 0,
+             "line": 1,
              "station": "M2",
              "comment": 0}
         )
@@ -15,24 +15,23 @@ def parser():
     for name in NAME_OBJECTS:
         count_type[name] = 0
 
-    _id = 0
-
     for obj in DATA:
-        _id += 1
         address = obj['address']
         type = PREFIX_FOR_OBJECTS[address[0]]
         prefix = PREFIX_OBJECTS[type]
         line = obj['line']
         path = PREFIX_FOR_OBJECTS[obj['station'][0]]
+        path_all = obj['station']
         contract = obj['comment']
 
         count_type[type] += 1
         objects[address] = {
-            'id': _id,
+            'id': count_type[type],
             'type': type,
             'prefix': prefix,
             'line': line,
             'path': path,
+            'path_all': path_all,
             'contract': contract
         }
 

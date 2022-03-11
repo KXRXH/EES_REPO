@@ -13,6 +13,7 @@ class Objects:
         self.k = lambda x: min(-0.007 * x**2 + 0.1185 * x + 0.4, 0.9)
 
         self.objs = dict()
+        self.id_to_addr = dict()
         for address in list(self.objects):
             self.objs[address] = dict()
 
@@ -20,6 +21,7 @@ class Objects:
             self.objs[address]['type'] = self.objects[address]['type']
             self.objs[address]['line'] = self.objects[address]['line']
             self.objs[address]['path'] = self.objects[address]['path']
+            self.objs[address]['path_all'] = self.objects[address]['path_all']
             self.objs[address]['contract'] = self.objects[address]['contract']
 
             self.objs[address]['charge'] = 0
@@ -99,9 +101,28 @@ class Objects:
         return self.objs[address]['online']  # онлайн
 
     def _path(self, address):
+        line_1 = self.objs[address]['line']
+        type_1 = self.objs[address]['path']
+        id_1 = self.objs[self.objs[address]['path_all']]['id']
+
         if self.objs[address]['type'] == 'main':
             return [[]]
-        return [[{"line": self.objs[address]['line'], "id": [self.objs[address]['path'], self.objs[address]['id']]}]]
+        if self.objs[address]['type'] in TYPE_WITH_2_INPUT:
+            index = NUM_OBJ.index(address[1])
+            address_2 = address[0] + NUM_OBJ[index+1]
+            if index % 2 == 0:
+                return None
+            try:
+                _ = self.objs[address_2]
+            except:
+                return [[{"line": line_1, "id": [type_1, id_1]}]]
+
+            line_2 = self.objs[address_2]['line']
+            type_2 = self.objs[address_2]['path']
+            id_2 = self.objs[self.objs[address_2]['path_all']]['id']
+
+            return [[{"line": line_1, "id": [type_1, id_1]}, {"line": line_2, "id": [type_2, id_2]}]]
+        return [[{"line": line_1, "id": [type_1, id_1]}]]
 
     def _address(self, address):
         if self.objs[address]['type'] in TYPE_WITH_2_INPUT:

@@ -1,38 +1,44 @@
 [
   {
-    "address": "h1",
-    "line": 3,
+    "address": "h2",
     "station": "M2",
+    "line": 3,
     "comment": 10
   },
   {
     "address": "f1",
-    "line": 3,
     "station": "M2",
-    "comment": 7
+    "line": 3,
+    "comment": 5.5
   },
   {
-    "address": "a2",
-    "line": 3,
+    "address": "f3",
     "station": "M2",
-    "comment": 3
-  },
-  {
-    "address": "a1",
     "line": 3,
-    "station": "M2",
-    "comment": 6
+    "comment": 5.4
   },
   {
     "address": "t1",
-    "line": 3,
     "station": "M2",
-    "comment": 4.8
+    "line": 1,
+    "comment": 6
   },
   {
-    "address": "e2",
-    "line": 3,
+    "address": "t3",
     "station": "M2",
-    "comment": 4
+    "line": 1,
+    "comment": 7
+  },
+  {
+    "address": "h3",
+    "station": "M2",
+    "line": 1,
+    "comment": 5.47
+  },
+  {
+    "address": "d1",
+    "station": "M2",
+    "line": 1,
+    "comment": 5.45
   }
 ]

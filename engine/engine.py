@@ -1,6 +1,7 @@
 from collections import defaultdict
 from engine.engine_const import *
 from engine.get_objects import Objects
+from engine.get_networks import get_networks
 
 
 class Engine:
@@ -47,6 +48,7 @@ class Engine:
 
     def _update(self):
         self.objs = self._objects.get_objects()
+        # self.nets = get_networks(self)
 
         self.orders_time_2 = self.orders_time_1.copy()
         self.orders = self.orders_time_2.copy()
