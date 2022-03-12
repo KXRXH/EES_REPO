@@ -1,10 +1,11 @@
 import random
+
 random.seed(1337)
 
 COUNT_WEATHER_VALUES = 8
 WEATHER_OBJECTS = ['solar', 'wind', 'hospital', 'factory', 'houseA', 'houseB']
 WEATHER_WAY = [random.randint(1, COUNT_WEATHER_VALUES) for i in WEATHER_OBJECTS]
-FILE = './forecasts_2069.csv'
+FILE = './forecasts_2064.csv'
 SEED = 1337
 random.seed(SEED)
 RUBLE = '\u20BD'

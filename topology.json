@@ -6,39 +6,21 @@
     "comment": 10
   },
   {
-    "address": "f1",
-    "station": "M2",
-    "line": 3,
-    "comment": 5.5
-  },
-  {
-    "address": "f3",
-    "station": "M2",
-    "line": 3,
-    "comment": 5.4
-  },
-  {
     "address": "t1",
     "station": "M2",
     "line": 1,
-    "comment": 6
+    "comment": 10
   },
   {
     "address": "t3",
     "station": "M2",
     "line": 1,
-    "comment": 7
+    "comment": 10
   },
   {
-    "address": "h3",
+    "address": "f3",
     "station": "M2",
     "line": 1,
-    "comment": 5.47
-  },
-  {
-    "address": "d1",
-    "station": "M2",
-    "line": 1,
-    "comment": 5.45
+    "comment": 5
   }
 ]

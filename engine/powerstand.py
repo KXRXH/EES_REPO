@@ -8,7 +8,6 @@ from argparse import Namespace
 
 from engine.engine_const import *
 
-
 __all__ = [
     "Powerstand", "Object", "Line", "Powerline",
     "Historic", "Receipt", "ExchangeReceipt",
@@ -185,7 +184,6 @@ class Powerstand:
         self.gameLength = end_tick - start_tick
         self.scoreDelta = score_delta
 
-
         self.sun = Historic(real_weather['solar'][self.tick], real_weather['solar'][0:self.tick])
         self.wind = Historic(real_weather['wind'][self.tick], real_weather['wind'][0:self.tick])
 
@@ -195,7 +193,6 @@ class Powerstand:
                                       make_forecasts(weather_data['factory']),
                                       make_forecasts(weather_data['houseA']),
                                       make_forecasts(weather_data['houseB']))
-
 
         self.objects = [make_object(obj, self.__station_index, self.__storage_index, self.__tps_index)
                         for obj in self.eng.objs]
@@ -302,7 +299,6 @@ class Powerstand:
         self.eng.exchange += (amount - sent_power) * spent_power_instant
 
         self.__orders.append({"orderT": order, "amount": amount, "price": price})
-
 
     def __set_line(self, address, line, value=True):
         pass

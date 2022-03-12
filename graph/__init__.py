@@ -1,5 +1,8 @@
 import engine
 
+TEXT_MARGIN_LEFT = 50
+TEXT_MARGIN_BORDER = 12
+
 
 class Graph:
     def __init__(self, ax, fig, eng):
@@ -129,19 +132,27 @@ class Graph:
         self.ax[1].grid()
 
         # Рисование 2 графика
-        self.ax[1].fill_between([0], [0], [0], facecolor='#FFEC14', label='Генерация от солнца')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#A3FFFF', label='Генерация от ветра')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#9C9C9C', label='Генерация от ТЭС')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#FF9494', label='Потребление больницами')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#FFFDBB', label='Потребление заводами')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#9DC941', label='Потребление домами А')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#BFE471', label='Потребление домами Б')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#3737FF', label='Операции с аккамуляторами')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#9400D3', label='Операции с игроками')
-        self.ax[1].fill_between([0], [0], [0], facecolor='#000000', label='Операции с внешней сетью')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#FFEC14',
+                                label=f'Генерация от солнца; {self.eng.count_objects["solar"]} шт')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#A3FFFF',
+                                label=f'Генерация от ветра; {self.eng.count_objects["wind"]} шт')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#9C9C9C',
+                                label=f'Генерация от ТЭС; {self.eng.count_objects["TPS"]} шт')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#FF9494',
+                                label=f'Потребление больницами; {self.eng.count_objects["hospital"]} шт')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#FFFDBB',
+                                label=f'Потребление заводами; {self.eng.count_objects["factory"]} шт')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#9DC941',
+                                label=f'Потребление домами А; {self.eng.count_objects["houseA"]} шт')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#BFE471',
+                                label=f'Потребление домами Б; {self.eng.count_objects["houseB"]} шт')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#9400D3',
+                                label=f'Операции с игроками')
+        self.ax[1].fill_between([0], [0], [0], facecolor='#000000',
+                                label=f'Операции с внешней сетью')
         self.ax[1].legend(loc='upper left', prop={'size': 13.5})
 
-        box_x_data = range(23, 57)
+        box_x_data = range(30, 75)
         self.ax[1].fill_between(box_x_data, [90 for _ in box_x_data], [-100 for _ in box_x_data], facecolor='#ffffc3')
 
         text_about_sys_data = self.normalise_num_for_str(0) + '\n' + self.normalise_num_for_str(
@@ -163,20 +174,18 @@ class Graph:
         text_about_sys_end = '____________________________\n\n\n'
         text_about_sys_end += "Игра окончена" if act_tick == end_tick - 1 else ""
 
-        self.ax[1].text(40, -60, 'Аукцион\nПотребители\nГенераторы\nЭнергосистема\nПерегрузка\nБиржа\n\nИтого',
+        self.ax[1].text(TEXT_MARGIN_LEFT, -60,
+                        'Аукцион\nПотребители\nГенераторы\nЭнергосистема\nПерегрузка\nБиржа\n\nИтого',
                         fontsize=20, ha='right', fontweight='bold')
-        self.ax[1].text(51, -60, text_about_sys_data, fontsize=20, ha='right', fontweight='bold')
+        self.ax[1].text(TEXT_MARGIN_LEFT + TEXT_MARGIN_BORDER, -60, text_about_sys_data, fontsize=20, ha='right',
+                        fontweight='bold')
         y_delta = -58
         for delta_text in text_about_sys_delta[::-1]:
-            self.ax[1].text(51.5, y_delta, delta_text, fontsize=12, color='grey')
+            self.ax[1].text(TEXT_MARGIN_LEFT + TEXT_MARGIN_BORDER, y_delta, delta_text, fontsize=12, color='grey')
             if delta_text == text_about_sys_delta[-1]:
                 y_delta += 18
             y_delta += 17.8
-        self.ax[1].text(40, -90, text_about_sys_end, fontsize=20, ha='center', fontweight='bold')
-
-        box_x_action = range(60, 100)
-        self.ax[1].fill_between(box_x_action, [90 for _ in box_x_action], [-100 for _ in box_x_action],
-                                facecolor='#f0f0f0')
+        self.ax[1].text(TEXT_MARGIN_LEFT, -90, text_about_sys_end, fontsize=20, ha='center', fontweight='bold')
 
         try:
             self.data_actions[0] = '- ' + self.data_actions[0]

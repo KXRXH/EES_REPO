@@ -10,7 +10,7 @@ class Objects:
 
         self.count_type, self.objects = parser()
 
-        self.k = lambda x: min(-0.007 * x**2 + 0.1185 * x + 0.4, 0.9)
+        self.k = lambda x: min(-0.007 * x ** 2 + 0.1185 * x + 0.4, 0.9)
 
         self.objs = dict()
         self.id_to_addr = dict()
@@ -44,10 +44,8 @@ class Objects:
             self.objs[address]['power_then'] = []
             self.objs[address]['charge_then'] = []
 
-
     def get_by_type(self, object_type: str):
         return max(0, self.real_weather[object_type][self.eng.act_tick] + random.uniform(-HALLWAY, HALLWAY))
-
 
     def _score_now_income(self, address, contract):
         type = self.objs[address]['type']
@@ -94,9 +92,11 @@ class Objects:
 
     def _online(self, address):
         if self.objs[address]['type'] == 'wind':
-            if self.get_by_type('wind') ** 3 * self.objs[address]['koaf_gen'] > MAX_POWER_WIND * 100 / MAX_POWER_PERCENT:
+            if self.get_by_type('wind') ** 3 * self.objs[address][
+                'koaf_gen'] > MAX_POWER_WIND * 100 / MAX_POWER_PERCENT:
                 self.objs[address]['online'] = False
-            if self.get_by_type('wind') ** 3 * self.objs[address]['koaf_gen'] < MAX_POWER_WIND * MINIMUM_RESUME_PERCENT / MAX_POWER_PERCENT:
+            if self.get_by_type('wind') ** 3 * self.objs[address][
+                'koaf_gen'] < MAX_POWER_WIND * MINIMUM_RESUME_PERCENT / MAX_POWER_PERCENT:
                 self.objs[address]['online'] = True
         return self.objs[address]['online']  # онлайн
 
@@ -109,7 +109,7 @@ class Objects:
             return [[]]
         if self.objs[address]['type'] in TYPE_WITH_2_INPUT:
             index = NUM_OBJ.index(address[1])
-            address_2 = address[0] + NUM_OBJ[index+1]
+            address_2 = address[0] + NUM_OBJ[index + 1]
             if index % 2 == 0:
                 return None
             try:
@@ -129,7 +129,7 @@ class Objects:
             index = NUM_OBJ.index(address[1])
             if index % 2 == 0:
                 return None
-            return [address, address[0] + NUM_OBJ[index+1]]
+            return [address, address[0] + NUM_OBJ[index + 1]]
         return [address]
 
     def get_objects(self):
@@ -179,9 +179,9 @@ class Objects:
         )
 
         self.objs[address]['score_then'].append({"loss": score_now_loss, "income": score_now_income})
-        self.objs[address]['power_then'].append({"online": online, "consumed": power_now_consumed, "generated": power_now_generated})
+        self.objs[address]['power_then'].append(
+            {"online": online, "consumed": power_now_consumed, "generated": power_now_generated})
         self.objs[address]['charge_then'].append(charge)
-
 
     def _set_charge(self, address, value):
         self.objs[address]['delta'] = value

@@ -1,14 +1,15 @@
 from engine.engine_const import *
 
+
 def parser():
     with open('topology.json', 'r', encoding="utf-8") as f:
         DATA = eval(f.read())
         DATA.insert(0,
-            {"address": "M2",
-             "line": 1,
-             "station": "M2",
-             "comment": 0}
-        )
+                    {"address": "M2",
+                     "line": 1,
+                     "station": "M2",
+                     "comment": 0}
+                    )
 
     objects = dict()
     count_type = dict()

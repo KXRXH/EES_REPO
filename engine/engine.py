@@ -1,7 +1,8 @@
-from collections import defaultdict
+import engine.parser
 from engine.engine_const import *
 from engine.get_objects import Objects
-from engine.get_networks import get_networks
+
+STOCK_SELL_PRICE = 3.5
 
 
 class Engine:
@@ -45,6 +46,7 @@ class Engine:
 
         self._objects = Objects(self)
 
+        self.count_objects = engine.parser.parser()[0]
 
     def _update(self):
         self.objs = self._objects.get_objects()
@@ -79,7 +81,6 @@ class Engine:
         self.consumers += self.delta_consumers
         self.generators += self.delta_generators
         self.power_system += self.delta_power_system
-
 
     def calc_money_and_energy(self):
         self.received_energy = 0
@@ -117,7 +118,7 @@ class Engine:
         for order, value in self.orders:
             if order == 'sell':
                 self.balance_energy -= value
-                cost_power_instant = value * (spent_power_instant * 2)
+                cost_power_instant = value * STOCK_SELL_PRICE
                 self.graph_history['exchange_players_p'][-1] += 0
                 self.graph_history['exchange_players_n'][-1] += value
                 self.delta_exchange += cost_power_instant
@@ -147,7 +148,6 @@ class Engine:
         self.exchange += self.delta_exchange
 
         return cost_power_instant
-
 
     def _set_order(self, type, value):
         self.orders_time_1.append([type, value])

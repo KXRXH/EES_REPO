@@ -14,8 +14,6 @@ def get_networks(eng):
                 power_area[str(path)]['upflow'] = 0
                 power_area[str(path)]['upflow'] = 0
 
-
-
             # {"upflow": 0.012876051995489336,
             #  "online": true,
             #  "location": [{"line": 2, "id": ["main", 1]}, {"line": 1, "id": ["miniB", 1]}],

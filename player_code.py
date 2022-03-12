@@ -5,6 +5,7 @@ charges_in_next2 = dict()
 need_energy_substation_next1 = dict()
 need_energy_substation_next2 = dict()
 
+
 def player_actions(eng: Engine, delta):
     global charges_in_next2
     global need_energy_substation_next1
@@ -20,8 +21,8 @@ def player_actions(eng: Engine, delta):
     BUY_PRICE = 2.5
     GENERATORS = ["solar", "wind", "tps"]
     CONSUMERS = ["housea", 'houseb', "factory", "hospital"]
-    TPS_POWER = 8
-    STOCK_K = 0.9
+    TPS_POWER = 10
+    STOCK_K = 0.85
     HOLIDAY_DELAY1 = 40
     HOLIDAY_DELAY2 = HOLIDAY_DELAY1 + 2
 
