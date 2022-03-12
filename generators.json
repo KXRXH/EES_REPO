@@ -1,0 +1,10 @@
+{
+  "solar": {
+    "count": 0,
+    "contracts": [20]
+  },
+  "wind": {
+    "count": 2,
+    "contracts": [19, 15]
+  }
+}
